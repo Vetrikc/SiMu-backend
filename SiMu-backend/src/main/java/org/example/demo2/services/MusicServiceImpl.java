@@ -67,6 +67,7 @@ public class MusicServiceImpl implements MusicService {
         musicRepository.deleteById(id);
     }
 
+
     private MusicDTO toDTO(Music music) {
         MusicDTO musicDTO = new MusicDTO();
         musicDTO.setId(music.getId());

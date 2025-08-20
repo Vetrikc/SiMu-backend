@@ -1,7 +1,7 @@
 package org.example.demo2.controller;
 
 import jakarta.validation.Valid;
-
+import org.example.demo2.DTO.ErrorResponse;
 import org.example.demo2.DTO.SigninRequest;
 import org.example.demo2.DTO.SignupRequest;
 import org.example.demo2.security.JwtCore;
@@ -17,7 +17,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -57,12 +60,21 @@ public class SecurityController {
                 signupRequest.getEmail(),
                 passwordEncoder.encode(signupRequest.getPassword())
         );
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        signupRequest.getUsername(),
+                        signupRequest.getPassword()
+                )
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtCore.generateToken(authentication);
         logger.info("User registered successfully: {}", signupRequest.getUsername());
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+        return ResponseEntity.ok(Map.of("message", "User registered successfully", "token",
+                jwt));
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<String> signin(@Valid @RequestBody SigninRequest signinRequest) {
+    public ResponseEntity<?> signin(@Valid @RequestBody SigninRequest signinRequest) {
         logger.debug("Signin request for username: {}", signinRequest.getUsername());
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -78,7 +90,7 @@ public class SecurityController {
         } catch (BadCredentialsException e) {
             logger.warn("Invalid credentials for username: {}", signinRequest.getUsername());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("error Invalid username or password");
+                    .body(new ErrorResponse("Invallid username or password", "INVALID_CREDENTIALS"));
         }
     }
 }
