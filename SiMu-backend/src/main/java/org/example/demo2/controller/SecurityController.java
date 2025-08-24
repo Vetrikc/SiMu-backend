@@ -48,49 +48,31 @@ public class SecurityController {
     public ResponseEntity<Map<String, String>> signup(@Valid @RequestBody SignupRequest signupRequest) {
         logger.debug("Signup request for username: {}", signupRequest.getUsername());
         if (userService.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Username already exists"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Username already exists"));
         }
         if (userService.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Email already exists"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Email already exists"));
         }
-        userService.createUser(
-                signupRequest.getUsername(),
-                signupRequest.getEmail(),
-                passwordEncoder.encode(signupRequest.getPassword())
-        );
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        signupRequest.getUsername(),
-                        signupRequest.getPassword()
-                )
-        );
+        userService.createUser(signupRequest.getUsername(), signupRequest.getEmail(), passwordEncoder.encode(signupRequest.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signupRequest.getUsername(), signupRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtCore.generateToken(authentication);
         logger.info("User registered successfully: {}", signupRequest.getUsername());
-        return ResponseEntity.ok(Map.of("message", "User registered successfully", "token",
-                jwt));
+        return ResponseEntity.ok(Map.of("message", "User registered successfully", "token", jwt));
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@Valid @RequestBody SigninRequest signinRequest) {
         logger.debug("Signin request for username: {}", signinRequest.getUsername());
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            signinRequest.getUsername(),
-                            signinRequest.getPassword()
-                    )
-            );
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getUsername(), signinRequest.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtCore.generateToken(authentication);
             logger.info("User signed in successfully: {}", signinRequest.getUsername());
-            return ResponseEntity.ok(jwt);
+            return ResponseEntity.ok(Map.of("token", jwt));
         } catch (BadCredentialsException e) {
             logger.warn("Invalid credentials for username: {}", signinRequest.getUsername());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Invallid username or password", "INVALID_CREDENTIALS"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Invallid username or password", "INVALID_CREDENTIALS"));
         }
     }
 }
