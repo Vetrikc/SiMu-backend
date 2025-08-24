@@ -223,7 +223,7 @@ paths:
           content:
             'application/json':
               schema:
-                type: "string"
+                $ref: "#/components/schemas/AuthResponse"
         "400":
           $ref: "#/components/responses/BadRequestError"
         "409":
@@ -249,13 +249,31 @@ paths:
           content:
             'application/json':
               schema:
-                type: "string"
+                $ref: "#/components/schemas/AuthResponse"
         "400":
           $ref: "#/components/responses/BadRequestError"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/refresh:
+    post:
+      summary: Refresh access token
+      parameters:
+        - in: cookie
+          name: refreshToken
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Access token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        '401':
+          $ref: "#/components/responses/UnauthorizedError"
 
   /api/user:
     get:
@@ -410,6 +428,20 @@ components:
           type: "string"
         password:
           type: "string"
+
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - message
+        - user
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
 
     UserInfoResponse:
       type: "object"

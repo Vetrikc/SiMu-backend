@@ -1,7 +1,7 @@
-import {AuthLayout} from "src/features/auth/ui/Auth-layout.tsx";
+import {AuthLayout} from "@/features/auth/ui/Auth-layout.tsx";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/shared/model/routes.tsx";
-import {RegisterForm} from "src/features/auth/ui/Register-form.tsx";
+import {RegisterForm} from "@/features/auth/ui/Register-form.tsx";
 
 function RegisterPage() {
   return <AuthLayout

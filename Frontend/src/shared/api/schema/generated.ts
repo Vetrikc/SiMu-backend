@@ -142,6 +142,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh access token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: {
+                    refreshToken?: string;
+                };
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Access token refreshed successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/user": {
         parameters: {
             query?: never;
@@ -220,6 +259,11 @@ export interface components {
             username?: string;
             password?: string;
         };
+        AuthResponse: {
+            token: string;
+            user: components["schemas"]["User"];
+            message: string;
+        };
         UserInfoResponse: {
             username?: string;
         };
@@ -235,7 +279,6 @@ export interface components {
         Error: {
             message: string;
             code: string;
-            details?: string;
         };
     };
     responses: {
@@ -247,8 +290,7 @@ export interface components {
             content: {
                 /** @example {
                  *       "message": "Invalid input data",
-                 *       "code": "VALIDATION_ERROR",
-                 *       "details": "Name field is required"
+                 *       "code": "VALIDATION_ERROR"
                  *     } */
                 "application/json": components["schemas"]["Error"];
             };
@@ -261,8 +303,7 @@ export interface components {
             content: {
                 /** @example {
                  *       "message": "Authentication required",
-                 *       "code": "UNAUTHORIZED",
-                 *       "details": "Please provide valid credentials"
+                 *       "code": "UNAUTHORIZED"
                  *     } */
                 "application/json": components["schemas"]["Error"];
             };
@@ -275,8 +316,7 @@ export interface components {
             content: {
                 /** @example {
                  *       "message": "Resource not found",
-                 *       "code": "NOT_FOUND",
-                 *       "details": "Music with id 123 not found"
+                 *       "code": "NOT_FOUND"
                  *     } */
                 "application/json": components["schemas"]["Error"];
             };
@@ -289,8 +329,7 @@ export interface components {
             content: {
                 /** @example {
                  *       "message": "Internal server error",
-                 *       "code": "INTERNAL_ERROR",
-                 *       "details": "Database connection failed"
+                 *       "code": "INTERNAL_ERROR"
                  *     } */
                 "application/json": components["schemas"]["Error"];
             };
@@ -303,8 +342,7 @@ export interface components {
             content: {
                 /** @example {
                  *       "message": "Resource already exists",
-                 *       "code": "CONFLICT",
-                 *       "details": "User with this username already exists"
+                 *       "code": "CONFLICT"
                  *     } */
                 "application/json": components["schemas"]["Error"];
             };
@@ -317,8 +355,7 @@ export interface components {
             content: {
                 /** @example {
                  *       "message": "File size exceeds limit",
-                 *       "code": "FILE_TOO_LARGE",
-                 *       "details": "Maximum file size is 10MB"
+                 *       "code": "FILE_TOO_LARGE"
                  *     } */
                 "application/json": components["schemas"]["Error"];
             };
@@ -509,7 +546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": components["schemas"]["AuthResponse"];
                 };
             };
             400: components["responses"]["BadRequestError"];
@@ -536,7 +573,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": components["schemas"]["AuthResponse"];
                 };
             };
             400: components["responses"]["BadRequestError"];
