@@ -18,18 +18,18 @@ services:
       timeout: 3s
       retries: 10
 
-  frontend:
-    build: C:\Users\vllad\IdeaProjects\SiMu-frontend\SiMu-frontend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/your_database?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=your_user
-      - SPRING_DATASOURCE_PASSWORD=your_password
-    networks:
-      - app-network
+    # frontend:
+    # build: C:\Users\vllad\IdeaProjects\SiMu-frontend\SiMu-frontend
+    # ports:
+    #   - "8080:8080"
+    # depends_on:
+    #   - db
+    # environment:
+    #   - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/your_database?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    #   - SPRING_DATASOURCE_USERNAME=your_user
+    #  - SPRING_DATASOURCE_PASSWORD=your_password
+    # networks:
+    #   - app-network
 
   backend:
     build: .
@@ -45,18 +45,18 @@ services:
     networks:
       - app-network
 
-  minio: # S3
-    image: minio/minio:latest
-    container_name: minio
-    ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # Web UI
-    volumes:
-      - ./minio-data:/data
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin123
-    command: server /data --console-address ":9001"
+    # minio: # S3
+    #  image: minio/minio:latest
+    #  container_name: minio
+    #  ports:
+    #    - "9000:9000"   # S3 API
+    #   - "9001:9001"   # Web UI
+    # volumes:
+    #    - ./minio-data:/data
+    #  environment:
+    #    MINIO_ROOT_USER: admin
+    #   MINIO_ROOT_PASSWORD: admin123
+    # command: server /data --console-address ":9001"
 
 volumes:
   db-data:
