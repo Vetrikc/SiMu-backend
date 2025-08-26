@@ -1,12 +1,13 @@
 import {jwtDecode} from "jwt-decode"
 import {create} from "zustand"
-import {persist} from "zustand/middleware/persist";
+import {persist} from "zustand/middleware";
 import {publicFetchClient} from "@/shared/api/instance.ts";
+import type {ROLE} from "@/shared/constants/user.ts";
 
 type Session = {
   userId: string;
   username: string;
-  role: string;
+  roles: ROLE[];
   exp: number;
   iat: number;
 }
