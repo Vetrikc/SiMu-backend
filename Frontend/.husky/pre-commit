@@ -1,0 +1,5 @@
+# .husky/pre-commit
+set -e
+npm run format
+npm run lint:fix
+git update-index --again
