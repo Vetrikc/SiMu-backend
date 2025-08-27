@@ -153,6 +153,11 @@ public class UserController {
         logger.debug("Retrieved {} playlists for user: {}", response.size(), username);
         return ResponseEntity.ok(response);
     }
+    @GetMapping(value = "/playlists1", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("response");
+    }
 
     /**
      * Handles UserNotFoundException.
