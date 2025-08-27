@@ -1,19 +1,17 @@
-package org.example.demo2.DTO;
+package org.example.demo2.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Data Transfer Object for Music entity.
+ * DTO for creating a playlist.
  */
 @Getter
 @Setter
-public class MusicUploadDTO {
-
+public class CreatePlaylistRequest {
     @NotBlank(message = "Name must not be blank")
     private String name;
 
-    @NotBlank(message = "Artist must not be blank")
-    private String artist;
+    private String description;
 }

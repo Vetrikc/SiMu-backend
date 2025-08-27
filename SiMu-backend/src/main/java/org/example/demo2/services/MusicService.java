@@ -1,7 +1,7 @@
 package org.example.demo2.services;
 
 import jakarta.validation.Valid;
-import org.example.demo2.DTO.MusicDTO;
+import org.example.demo2.dto.MusicDTO;
 
 import java.util.List;
 

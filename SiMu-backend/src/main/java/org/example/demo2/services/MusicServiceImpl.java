@@ -2,7 +2,7 @@ package org.example.demo2.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import org.example.demo2.DTO.MusicDTO;
+import org.example.demo2.dto.MusicDTO;
 import org.example.demo2.entity.Music;
 import org.example.demo2.repository.MusicRepository;
 import org.slf4j.Logger;

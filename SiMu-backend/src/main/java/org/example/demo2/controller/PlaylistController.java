@@ -1,7 +1,7 @@
 package org.example.demo2.controller;
 
 import jakarta.validation.Valid;
-import org.example.demo2.DTO.CreatePlaylistRequest;
+import org.example.demo2.dto.CreatePlaylistRequest;
 import org.example.demo2.entity.PlayList;
 import org.example.demo2.services.PlayListService;
 import org.slf4j.Logger;

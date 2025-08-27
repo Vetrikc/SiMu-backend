@@ -2,8 +2,8 @@ package org.example.demo2.controller;
 
 import jakarta.validation.Valid;
 
-import org.example.demo2.DTO.MusicDTO;
-import org.example.demo2.DTO.MusicUploadDTO;
+import org.example.demo2.dto.MusicDTO;
+import org.example.demo2.dto.MusicUploadDTO;
 import org.example.demo2.services.MusicService;
 import org.example.demo2.services.S3Service;
 import org.slf4j.Logger;
@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
