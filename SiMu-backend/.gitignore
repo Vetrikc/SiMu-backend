@@ -1,0 +1,57 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# Java build
+target/
+bin/
+build/
+
+# Maven
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Spring Boot
+*.log
+*.tmp
+*.bak
+*.swp
+*.pid
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+*.local.properties
+
+# Logs
+logs/
+*.log
+
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Test reports
+test-output/
+surefire-reports/
+
+# IDE auto-save
+__MACOSX/

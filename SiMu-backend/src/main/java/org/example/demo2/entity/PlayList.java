@@ -2,6 +2,7 @@ package org.example.demo2.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,8 +14,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "playlists")
-@Getter
-@Setter
+@Data
 public class PlayList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

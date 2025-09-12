@@ -13,10 +13,10 @@ import org.example.demo2.dto.ErrorResponse;
 import org.example.demo2.dto.PlaylistRequest;
 import org.example.demo2.dto.PlaylistResponse;
 import org.example.demo2.dto.UserInfoResponse;
+import org.example.demo2.entity.PlayList;
 import org.example.demo2.exception.PlaylistNotFoundException;
 import org.example.demo2.exception.UserNotFoundException;
 import org.example.demo2.mapper.PlaylistMapper;
-import org.example.demo2.entity.PlayList;
 import org.example.demo2.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing user-related operations.
@@ -87,9 +86,9 @@ public class UserController {
     /**
      * Adds a new playlist for the authenticated user.
      *
-     * @param authentication The Spring Security authentication object.
+     * @param authentication  The Spring Security authentication object.
      * @param playlistRequest The playlist data to create.
-     * @param uriBuilder URI builder for location header.
+     * @param uriBuilder      URI builder for location header.
      * @return Created playlist information.
      */
     @Operation(summary = "Add a new playlist", description = "Creates a new playlist for the authenticated user")
@@ -115,12 +114,11 @@ public class UserController {
         String username = authentication.getName();
         logger.info("Adding playlist for user: {}", username);
         PlayList playlist = playlistMapper.toEntity(playlistRequest);
-        PlayList savedPlaylist = userService.addPlaylistToUser(username, playlist);
-        PlaylistResponse response = playlistMapper.toResponse(savedPlaylist);
+        PlaylistResponse response = userService.addPlaylistToUser(username, playlist);
         URI location = uriBuilder.path("/api/v1/playlists/{id}")
-                .buildAndExpand(savedPlaylist.getId())
+                .buildAndExpand(response.id())
                 .toUri();
-        logger.info("Playlist created successfully for user: {}, playlist ID: {}", username, savedPlaylist.getId());
+        logger.info("Playlist created successfully for user: {}, playlist ID: {}", username, response.id());
         return ResponseEntity.created(location).body(response);
     }
 
@@ -146,13 +144,11 @@ public class UserController {
             @Parameter(hidden = true) Authentication authentication) {
         String username = authentication.getName();
         logger.info("Fetching playlists for user: {}", username);
-        List<PlayList> playlists = userService.getUserPlaylists(username);
-        List<PlaylistResponse> response = playlists.stream()
-                .map(playlistMapper::toResponse)
-                .collect(Collectors.toList());
+        List<PlaylistResponse> response = userService.getUserPlaylists(username);
         logger.debug("Retrieved {} playlists for user: {}", response.size(), username);
         return ResponseEntity.ok(response);
     }
+
     @GetMapping(value = "/playlists1", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> test() {

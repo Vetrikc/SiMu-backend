@@ -1,5 +1,6 @@
 package org.example.demo2.mapper;
 
+import org.example.demo2.dto.CreatePlaylistRequest;
 import org.example.demo2.dto.PlaylistRequest;
 import org.example.demo2.dto.PlaylistResponse;
 import org.example.demo2.entity.Music;
@@ -9,6 +10,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +30,21 @@ public interface PlaylistMapper {
      */
     @Mapping(target = "tracks", expression = "java(java.util.Collections.emptyList())")
     PlayList toEntity(PlaylistRequest request);
+
+    /**
+     * Converts PlaylistRequest to PlayList entity.
+     * Tracks are initialized as an empty list and should be set separately.
+     *
+     * @param request the CreatePlaylistRequest object
+     * @return PlayList entity
+     */
+    default PlayList toEntity(CreatePlaylistRequest request) {
+        PlayList playlist = new PlayList();
+        playlist.setName(request.name());
+        playlist.setDescription(request.description());
+        playlist.setTracks(new ArrayList<>()); // Инициализация пустого списка
+        return playlist;
+    }
 
     /**
      * Converts PlayList entity to PlaylistResponse.

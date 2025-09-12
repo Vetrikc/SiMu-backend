@@ -1,17 +1,5 @@
 package org.example.demo2.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
 
-/**
- * DTO for creating a playlist.
- */
-@Getter
-@Setter
-public class CreatePlaylistRequest {
-    @NotBlank(message = "Name must not be blank")
-    private String name;
-
-    private String description;
-}
+public record CreatePlaylistRequest(@NotNull String name, String description) {}
