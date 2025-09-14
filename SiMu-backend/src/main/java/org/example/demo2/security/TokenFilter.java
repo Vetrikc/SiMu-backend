@@ -9,16 +9,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.security.core.GrantedAuthority;
+
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,7 @@ public class TokenFilter extends OncePerRequestFilter {
             jwt = authHeader.substring(7);
             if (jwt.isEmpty()) {
                 logger.warn("Empty JWT token in Authorization header for request: {}", request.getRequestURI());
-                sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Empty token");
+                sendError(response, HttpStatus.BAD_REQUEST, "TOKEN_EMPTY", "Token is empty");
                 return;
             }
 
@@ -59,11 +60,11 @@ public class TokenFilter extends OncePerRequestFilter {
                 logger.debug("Extracted username: {}, roles: {} from JWT", username, tokenRoles);
             } catch (ExpiredJwtException e) {
                 logger.warn("JWT token expired for request: {}, error: {}", request.getRequestURI(), e.getMessage());
-                sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
+                sendError(response, HttpStatus.UNAUTHORIZED, "TOKEN_EXPIRED", "Token expired");
                 return;
             } catch (JwtException e) {
                 logger.warn("Invalid JWT token for request: {}, error: {}", request.getRequestURI(), e.getMessage());
-                sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                sendError(response, HttpStatus.UNAUTHORIZED, "TOKEN_INVALID", "Invalid token");
                 return;
             }
 
@@ -77,7 +78,7 @@ public class TokenFilter extends OncePerRequestFilter {
 
                 if (!userRoles.containsAll(tokenRoles)) {
                     logger.warn("Role mismatch for user: {}, token roles: {}, user roles: {}", username, tokenRoles, userRoles);
-                    sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Token roles do not match user roles");
+                    sendError(response, HttpStatus.FORBIDDEN, "ROLE_MISMATCH", "Token roles do not match user roles");
                     return;
                 }
 
@@ -97,9 +98,11 @@ public class TokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
-        response.setStatus(status);
+    private void sendError(HttpServletResponse response, HttpStatus status, String code, String message) throws IOException {
+        response.setStatus(status.value());
         response.setContentType("application/json");
-        response.getWriter().write(String.format("{\"error\": \"%s\"}", message));
+        String body = String.format("{\"message\": \"%s\", \"errorCode\": \"%s\"}", message, code);
+        response.getWriter().write(body);
     }
+
 }
