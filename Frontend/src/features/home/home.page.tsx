@@ -1,8 +1,8 @@
 function HomePage() {
   return (
-    <div className="grow">
+    <section className="grow bg-card px-10 py-8 ">
       <h1>home page</h1>
-    </div>
+    </section>
   );
 }
 

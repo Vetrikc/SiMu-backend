@@ -11,9 +11,8 @@ import {Input} from "@/shared/ui/kit/input.tsx";
 import {zodResolver} from "@hookform/resolvers/zod"
 import {
   type RegisterFormData, registerSchema
-} from "@/shared/constants/auth.ts";
+} from "@/shared/model/auth.ts";
 import {Spinner} from "@/shared/ui/kit/spinner.tsx";
-import {useLogin} from "src/features/auth/model/use-login.ts";
 import {useRegister} from "src/features/auth/model/use-register.ts";
 
 

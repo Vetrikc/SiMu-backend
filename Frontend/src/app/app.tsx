@@ -1,5 +1,5 @@
 import {Outlet, useLocation} from "react-router-dom";
-import { AppHeader } from "@/features/header";
+import {AppHeader} from "@/features/header";
 import {ROUTES} from "@/shared/model/routes.tsx";
 
 export function App() {

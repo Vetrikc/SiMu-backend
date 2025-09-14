@@ -9,7 +9,7 @@ import {
 import {Button} from "@/shared/ui/kit/button.tsx";
 import {Input} from "@/shared/ui/kit/input.tsx";
 import {zodResolver} from "@hookform/resolvers/zod"
-import {type LoginFormData, loginSchema} from "@/shared/constants/auth.ts";
+import {type LoginFormData, loginSchema} from "@/shared/model/auth.ts";
 import {useLogin} from "src/features/auth/model/use-login.ts";
 import {Spinner} from "@/shared/ui/kit/spinner.tsx";
 
