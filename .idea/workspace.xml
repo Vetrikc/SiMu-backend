@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="866abe04-54e8-48a0-86af-a1404a0cb27d" name="Changes" comment="feat: sidebar and new pages">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SiMu-backend.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/SiMu-backend.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/uiDesigner.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/features/auth/model/use-login.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/features/auth/model/use-login.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/features/auth/model/use-register.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/features/auth/model/use-register.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/features/home/home.page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/features/home/home.page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/features/library/library.page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/features/library/library.page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/shared/api/instance.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/shared/api/instance.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/shared/api/schema/generated.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/shared/api/schema/generated.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/shared/api/schema/main.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/shared/api/schema/main.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SiMu-backend/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/SiMu-backend/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SiMu-backend/src/main/java/org/example/demo2/config/S3Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/SiMu-backend/src/main/java/org/example/demo2/config/S3Config.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feature-v2" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;N1SHA-git&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:Vetrikc/SiMu-backend.git&quot;,
+    &quot;accountId&quot;: &quot;48eb3ecb-2e26-4787-972a-2cebb09c4104&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="31Pk4SttPzFZ3vG92xYw1Es1lDD" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="autoscrollToSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="openDirectoriesWithSingleClick" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/home__page&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/nisha/Frontend/Projects/SiMu-backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/Users/nisha/Frontend/Projects/SiMu-backend/Frontend/node_modules/prettier&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/nisha/Frontend/Projects/SiMu-backend/Frontend/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Frontend/src/shared/assets" />
+      <recent name="$PROJECT_DIR$/Frontend/src/shared/api/schema" />
+      <recent name="$PROJECT_DIR$/Frontend/src/features/songs" />
+      <recent name="$PROJECT_DIR$/Frontend/src/features" />
+      <recent name="$PROJECT_DIR$/Frontend/src/features/settings" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Frontend/src/features" />
+      <recent name="$PROJECT_DIR$/Frontend/src/shared/model" />
+      <recent name="$PROJECT_DIR$/Frontend/src/app/providers" />
+      <recent name="$PROJECT_DIR$/Frontend/src/app/router" />
+      <recent name="$PROJECT_DIR$/Frontend/src/features/auth/model" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-WS-251.26927.40" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="866abe04-54e8-48a0-86af-a1404a0cb27d" name="Changes" comment="" />
+      <created>1755432903356</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1755432903356</updated>
+      <workItem from="1755432904627" duration="10053000" />
+      <workItem from="1755725036745" duration="17732000" />
+      <workItem from="1756049419062" duration="7598000" />
+      <workItem from="1756065325380" duration="42424000" />
+      <workItem from="1756544613127" duration="14046000" />
+      <workItem from="1756703913294" duration="1328000" />
+      <workItem from="1756987006399" duration="5619000" />
+      <workItem from="1757265062056" duration="546000" />
+      <workItem from="1757265635108" duration="569000" />
+      <workItem from="1757266234581" duration="136000" />
+      <workItem from="1757266411057" duration="11096000" />
+      <workItem from="1757530880809" duration="14971000" />
+      <workItem from="1757864067087" duration="629000" />
+      <workItem from="1757864796961" duration="25927000" />
+      <workItem from="1758481868043" duration="411000" />
+      <workItem from="1758482291665" duration="140000" />
+      <workItem from="1758482448568" duration="346000" />
+      <workItem from="1758482813000" duration="3897000" />
+      <workItem from="1758741027660" duration="5486000" />
+    </task>
+    <task id="LOCAL-00001" summary="feat: initialization frontend">
+      <option name="closed" value="true" />
+      <created>1755449835691</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1755449835691</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat: add eslint and change tsconfig and vite config">
+      <option name="closed" value="true" />
+      <created>1755455180283</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1755455180283</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: init commitlint with husky">
+      <option name="closed" value="true" />
+      <created>1756049492211</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1756049492211</updated>
+    </task>
+    <task id="LOCAL-00004" summary="feat: setting env and allow front localhost in backend">
+      <option name="closed" value="true" />
+      <created>1756049941032</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1756049941032</updated>
+    </task>
+    <task id="LOCAL-00005" summary="feat: new packages and setting shadcn">
+      <option name="closed" value="true" />
+      <created>1756050041543</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050041543</updated>
+    </task>
+    <task id="LOCAL-00006" summary="feat: added router and providers">
+      <option name="closed" value="true" />
+      <created>1756050089193</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050089193</updated>
+    </task>
+    <task id="LOCAL-00007" summary="feat: added new pages">
+      <option name="closed" value="true" />
+      <created>1756050130609</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050130609</updated>
+    </task>
+    <task id="LOCAL-00008" summary="feat: added openapi configuration">
+      <option name="closed" value="true" />
+      <created>1756050178096</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050178096</updated>
+    </task>
+    <task id="LOCAL-00009" summary="feat: added some components from shadcn and new font">
+      <option name="closed" value="true" />
+      <created>1756050221483</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050221483</updated>
+    </task>
+    <task id="LOCAL-00010" summary="feat: added routes">
+      <option name="closed" value="true" />
+      <created>1756050241100</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050241100</updated>
+    </task>
+    <task id="LOCAL-00011" summary="feat: some congig for env">
+      <option name="closed" value="true" />
+      <created>1756050255582</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050255582</updated>
+    </task>
+    <task id="LOCAL-00012" summary="feat: auth ui with logic">
+      <option name="closed" value="true" />
+      <created>1756050312727</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1756050312727</updated>
+    </task>
+    <task id="LOCAL-00013" summary="feat: fixed backend">
+      <option name="closed" value="true" />
+      <created>1756072748615</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1756072748616</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat: deleted old folder for backend">
+      <option name="closed" value="true" />
+      <created>1756072788877</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1756072788877</updated>
+    </task>
+    <task id="LOCAL-00015" summary="feat: added session and token auth">
+      <option name="closed" value="true" />
+      <created>1756072858383</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1756072858383</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fix: changed type of session, roles now is Array">
+      <option name="closed" value="true" />
+      <created>1756234595159</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1756234595159</updated>
+    </task>
+    <task id="LOCAL-00017" summary="feat: sidebar and new pages">
+      <option name="closed" value="true" />
+      <created>1757855416372</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1757855416372</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat: initialization frontend" />
+    <MESSAGE value="feat: add eslint and change tsconfig and vite config" />
+    <MESSAGE value="feat: init commitlint with husky" />
+    <MESSAGE value="feat: setting env and allow front localhost in backend" />
+    <MESSAGE value="feat: new packages and setting shadcn" />
+    <MESSAGE value="feat: added router and providers" />
+    <MESSAGE value="feat: added new pages" />
+    <MESSAGE value="feat: added openapi configuration" />
+    <MESSAGE value="feat: added some components from shadcn and new font" />
+    <MESSAGE value="feat: added routes" />
+    <MESSAGE value="feat: some congig for env" />
+    <MESSAGE value="feat: auth ui with logic" />
+    <MESSAGE value="feat: fixed backend" />
+    <MESSAGE value="feat: deleted old folder for backend" />
+    <MESSAGE value="feat: added session and token auth" />
+    <MESSAGE value="fix: changed type of session, roles now is Array" />
+    <MESSAGE value="feat: sidebar and new pages" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: sidebar and new pages" />
+  </component>
+</project>
