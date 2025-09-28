@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/music/{id}": {
+    "/api/v1/users/playlists": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,43 +12,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * получить музыку по id
-         * @description получить музыку по id
+         * Get user playlists
+         * @description Returns a list of playlists for the authenticated user
          */
-        get: operations["getMusic"];
+        get: operations["getUserPlaylists"];
         put?: never;
-        post?: never;
+        /**
+         * Add a new playlist
+         * @description Creates a new playlist for the authenticated user
+         */
+        post: operations["addPlaylist"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/music": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * получить всю музыку
-         * @description получить всю музыку
-         */
-        get: operations["getAllMusic"];
-        put?: never;
-        /**
-         * зыгрузить музыку
-         * @description зыгрузить музыку
-         */
-        post: operations["uploadMusic"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/playlists": {
+    "/api/v1/playlists": {
         parameters: {
             query?: never;
             header?: never;
@@ -58,8 +38,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * создать плей лист
-         * @description ...
+         * Create a new playlist
+         * @description Creates a new playlist for the authenticated user
          */
         post: operations["createPlaylist"];
         delete?: never;
@@ -68,7 +48,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/playlists/{playlistId}/tracks/{musicId}": {
+    "/api/v1/playlists/{playlistId}/tracks/{musicId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -78,8 +58,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * добавить трек в плей лист
-         * @description ...
+         * Add track to playlist
+         * @description Adds a track to an existing playlist
          */
         post: operations["addTrackToPlaylist"];
         delete?: never;
@@ -88,7 +68,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/playlists/{id}": {
+    "/api/v1/music": {
         parameters: {
             query?: never;
             header?: never;
@@ -96,8 +76,108 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * получить плей лист по id
-         * @description получит
+         * Get all music records
+         * @description Returns a list of all music records
+         */
+        get: operations["getAllMusic"];
+        put?: never;
+        /**
+         * Upload music file
+         * @description Uploads a music file to S3 and saves its metadata
+         */
+        post: operations["uploadMusic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register a new user
+         * @description Creates a new user account and returns a JWT token
+         */
+        post: operations["signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/signin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Authenticate a user
+         * @description Authenticates a user and returns a JWT token
+         */
+        post: operations["signin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user information
+         * @description Returns information about the authenticated user
+         */
+        get: operations["getUserInfo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/playlists1": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["test"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/playlists/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get playlist by ID
+         * @description Retrieves a playlist by its ID
          */
         get: operations["getPlaylist"];
         put?: never;
@@ -108,108 +188,20 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/signup": {
+    "/api/v1/music/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** зарегистрироваться */
-        post: operations["signup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/signin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** авторизироваться */
-        post: operations["signin"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Refresh access token */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: {
-                    refreshToken?: string;
-                };
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Access token refreshed successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AuthResponse"];
-                    };
-                };
-                401: components["responses"]["UnauthorizedError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** получить информацию о пользователе */
-        get: operations["getUserInfo"];
+        /**
+         * Get music by ID
+         * @description Retrieves a music record by its ID
+         */
+        get: operations["getMusic"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/user/playlists": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** получить плей листы пользователя */
-        get: operations["getUserPlaylists"];
-        put?: never;
-        /** добавить плей лист для юзера */
-        post: operations["addNowCreatedPlaylistToUser"];
         delete?: never;
         options?: never;
         head?: never;
@@ -220,6 +212,40 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Playlist data to create */
+        PlaylistRequest: {
+            name: string;
+            tracks?: string[];
+        };
+        /** @description Error response for failed requests */
+        ErrorResponse: {
+            /**
+             * @description Error message describing the issue
+             * @example Username already exists
+             */
+            message?: string;
+            /**
+             * @description Error code for the issue
+             * @example USER_ALREADY_EXISTS
+             */
+            errorCode?: string;
+        };
+        PlaylistResponse: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            tracks?: string[];
+        };
+        /** @description Playlist creation data */
+        CreatePlaylistRequest: {
+            name: string;
+            description?: string;
+        };
+        /** @description Music metadata */
+        MusicUploadDTO: {
+            name: string;
+            artist: string;
+        };
         MusicDTO: {
             /** Format: int64 */
             id?: number;
@@ -227,140 +253,69 @@ export interface components {
             artist?: string;
             url?: string;
         };
-        MusicUploadDTO: {
-            name?: string;
-            artist?: string;
-        };
-        CreatePlaylistRequest: {
-            name?: string;
-            description?: string;
-        };
-        Music: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            artist?: string;
-            url?: string;
-        };
-        PlayList: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            description?: string;
-            imageUrl?: string;
-            tracks?: components["schemas"]["Music"][];
-        };
+        /** @description User registration data */
         SignupRequest: {
-            username?: string;
-            email?: string;
-            password?: string;
+            /**
+             * @description Username for the new user
+             * @example john_doe
+             */
+            username: string;
+            /**
+             * @description Email address of the user
+             * @example john.doe@example.com
+             */
+            email: string;
+            /**
+             * @description Password for the user account
+             * @example password123
+             */
+            password: string;
         };
+        /** @description Response for successful user registration */
+        SignupResponse: {
+            /**
+             * @description Message indicating the result of the registration
+             * @example User registered successfully
+             */
+            message?: string;
+            /**
+             * @description JWT token for authentication
+             * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+             */
+            token?: string;
+            /**
+             * Format: int64
+             * @description Unique identifier of the registered user
+             * @example 1
+             */
+            userId?: number;
+        };
+        /** @description User login credentials */
         SigninRequest: {
-            username?: string;
-            password?: string;
+            /**
+             * @description Username of the user
+             * @example john_doe
+             */
+            username: string;
+            /**
+             * @description Password of the user
+             * @example password123
+             */
+            password: string;
         };
-        AuthResponse: {
-            token: string;
-            user: components["schemas"]["User"];
-            message: string;
+        /** @description Response for successful user authentication */
+        SigninResponse: {
+            /**
+             * @description JWT token for authentication
+             * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+             */
+            token?: string;
         };
         UserInfoResponse: {
             username?: string;
         };
-        User: {
-            /** Format: int64 */
-            id?: number;
-            username?: string;
-            password?: string;
-            email?: string;
-            playlists?: components["schemas"]["PlayList"][];
-            roles?: string[];
-        };
-        Error: {
-            message: string;
-            code: string;
-        };
     };
-    responses: {
-        /** @description Bad request */
-        BadRequestError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /** @example {
-                 *       "message": "Invalid input data",
-                 *       "code": "VALIDATION_ERROR"
-                 *     } */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Unauthorized */
-        UnauthorizedError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /** @example {
-                 *       "message": "Authentication required",
-                 *       "code": "UNAUTHORIZED"
-                 *     } */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Resource not found */
-        NotFoundError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /** @example {
-                 *       "message": "Resource not found",
-                 *       "code": "NOT_FOUND"
-                 *     } */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Internal server error */
-        InternalServerError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /** @example {
-                 *       "message": "Internal server error",
-                 *       "code": "INTERNAL_ERROR"
-                 *     } */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Conflict */
-        ConflictError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /** @example {
-                 *       "message": "Resource already exists",
-                 *       "code": "CONFLICT"
-                 *     } */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description File too large */
-        FileTooLargeError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /** @example {
-                 *       "message": "File size exceeds limit",
-                 *       "code": "FILE_TOO_LARGE"
-                 *     } */
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-    };
+    responses: never;
     parameters: never;
     requestBodies: never;
     headers: never;
@@ -368,33 +323,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getMusic: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MusicDTO"];
-                };
-            };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            404: components["responses"]["NotFoundError"];
-            500: components["responses"]["InternalServerError"];
-        };
-    };
-    getAllMusic: {
+    getUserPlaylists: {
         parameters: {
             query?: never;
             header?: never;
@@ -403,49 +332,84 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Playlists retrieved successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MusicDTO"][];
+                    "application/json": components["schemas"]["PlaylistResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaylistResponse"][];
+                };
+            };
         };
     };
-    uploadMusic: {
+    addPlaylist: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                    music: components["schemas"]["MusicUploadDTO"];
-                };
+                "application/json": components["schemas"]["PlaylistRequest"];
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Playlist created successfully */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MusicDTO"];
+                    "application/json": components["schemas"]["PlaylistResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            413: components["responses"]["FileTooLargeError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Invalid playlist data */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaylistResponse"];
+                };
+            };
         };
     };
     createPlaylist: {
@@ -461,18 +425,51 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Playlist created successfully */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlayList"];
+                    "application/json": components["schemas"]["PlaylistResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Invalid playlist data */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaylistResponse"];
+                };
+            };
         };
     };
     addTrackToPlaylist: {
@@ -480,51 +477,174 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description ID of the playlist */
                 playlistId: number;
+                /** @description ID of the track to add */
                 musicId: number;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Track added successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlayList"];
+                    "application/json": components["schemas"]["PlaylistResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            404: components["responses"]["NotFoundError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Playlist or track not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaylistResponse"];
+                };
+            };
         };
     };
-    getPlaylist: {
+    getAllMusic: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                id: number;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Music records retrieved successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlayList"];
+                    "application/json": components["schemas"]["MusicDTO"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            404: components["responses"]["NotFoundError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MusicDTO"][];
+                };
+            };
+        };
+    };
+    uploadMusic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description Music file to upload
+                     */
+                    file: string;
+                    music: components["schemas"]["MusicUploadDTO"];
+                };
+            };
+        };
+        responses: {
+            /** @description Music file uploaded successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MusicDTO"];
+                };
+            };
+            /** @description Invalid file or metadata */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MusicDTO"];
+                };
+            };
         };
     };
     signup: {
@@ -540,18 +660,33 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description User registered successfully */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuthResponse"];
+                    "application/json": components["schemas"]["SignupResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            409: components["responses"]["ConflictError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Invalid input or user/email already exists */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupResponse"];
+                };
+            };
         };
     };
     signin: {
@@ -567,18 +702,42 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description User authenticated successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuthResponse"];
+                    "application/json": components["schemas"]["SigninResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Invalid username or password */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SigninResponse"];
+                };
+            };
         };
     };
     getUserInfo: {
@@ -590,7 +749,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description User info retrieved successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -599,11 +758,27 @@ export interface operations {
                     "application/json": components["schemas"]["UserInfoResponse"];
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserInfoResponse"];
+                };
+            };
         };
     };
-    getUserPlaylists: {
+    test: {
         parameters: {
             query?: never;
             header?: never;
@@ -618,38 +793,127 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlayList"][];
+                    "application/json": string;
                 };
             };
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
         };
     };
-    addNowCreatedPlaylistToUser: {
+    getPlaylist: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID of the playlist */
+                id: number;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlayList"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Playlist retrieved successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["User"];
+                    "application/json": components["schemas"]["PlaylistResponse"];
                 };
             };
-            400: components["responses"]["BadRequestError"];
-            401: components["responses"]["UnauthorizedError"];
-            500: components["responses"]["InternalServerError"];
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Playlist not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaylistResponse"];
+                };
+            };
+        };
+    };
+    getMusic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the music record */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Music record retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MusicDTO"];
+                };
+            };
+            /** @description Unauthorized - User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Music record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MusicDTO"];
+                };
+            };
         };
     };
 }
