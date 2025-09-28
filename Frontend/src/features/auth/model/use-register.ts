@@ -9,9 +9,9 @@ export function useRegister() {
 
   const createSession = useSession(state => state.updateToken)
 
-  const registerMutation = publicRqClient.useMutation("post", "/api/auth/signup", {
+  const registerMutation = publicRqClient.useMutation("post", "/api/v1/auth/signup", {
     onSuccess(data) {
-      createSession(data.token)
+      createSession(data.token!)
       navigate(ROUTES.HOME)
     }
   })

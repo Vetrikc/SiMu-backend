@@ -9,9 +9,9 @@ export function useLogin() {
 
   const createSession = useSession(state => state.updateToken)
 
-  const loginMutation = publicRqClient.useMutation("post", "/api/auth/signin", {
+  const loginMutation = publicRqClient.useMutation("post", "/api/v1/auth/signin", {
     onSuccess(data) {
-      createSession(data.token)
+      createSession(data.token!)
       navigate(ROUTES.HOME)
     }
   })
@@ -20,7 +20,8 @@ export function useLogin() {
     loginMutation.mutate({body: data})
   }
   const errorMessage = loginMutation.isError
-    ? loginMutation.error.message
+    // @ts-ignore
+    ? loginMutation.error?.message
     : undefined
 
   return {
