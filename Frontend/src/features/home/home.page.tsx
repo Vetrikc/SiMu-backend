@@ -13,7 +13,7 @@ type Playlist = {
   id: string;
   name: string;
   coverImg: string;
-  tracks: any[];
+  tracks: unknown[];
 };
 
 const mockData: Array<Playlist> = [
