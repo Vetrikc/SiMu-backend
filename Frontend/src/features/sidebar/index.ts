@@ -1,1 +1,1 @@
-export {AppSidebar} from "./Sidebar.tsx"
+export { AppSidebar } from "./Sidebar.tsx";

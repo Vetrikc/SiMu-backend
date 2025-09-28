@@ -1,9 +1,9 @@
-const ROLES = {
+export const ROLES = {
   USER: "USER",
   ADMIN: "ADMIN",
 } as const;
 
-export type ROLE = typeof ROLES[keyof typeof ROLES];
+export type ROLE = (typeof ROLES)[keyof typeof ROLES];
 
 export type User = {
   userId: string;
@@ -11,4 +11,4 @@ export type User = {
   email: string;
   password: string;
   roles: ROLE[];
-}
+};

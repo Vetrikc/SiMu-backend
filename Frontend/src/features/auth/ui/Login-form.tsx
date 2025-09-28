@@ -1,49 +1,43 @@
-import {useForm} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel, FormMessage
+  FormLabel,
+  FormMessage,
 } from "@/shared/ui/kit/form.tsx";
-import {Button} from "@/shared/ui/kit/button.tsx";
-import {Input} from "@/shared/ui/kit/input.tsx";
-import {zodResolver} from "@hookform/resolvers/zod"
-import {type LoginFormData, loginSchema} from "@/shared/model/auth.ts";
-import {useLogin} from "src/features/auth/model/use-login.ts";
-import {Spinner} from "@/shared/ui/kit/spinner.tsx";
-
+import { Button } from "@/shared/ui/kit/button.tsx";
+import { Input } from "@/shared/ui/kit/input.tsx";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { type LoginFormData, loginSchema } from "@/shared/model/auth.ts";
+import { useLogin } from "src/features/auth/model/use-login.ts";
+import { Spinner } from "@/shared/ui/kit/spinner.tsx";
 
 export function LoginForm() {
-
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
     },
-  })
+  });
 
-  const {errorMessage, isPending, login} = useLogin()
+  const { errorMessage, isPending, login } = useLogin();
 
-  const onSubmit = form.handleSubmit(login)
+  const onSubmit = form.handleSubmit(login);
 
   return (
     <Form {...form}>
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={onSubmit}
-      >
+      <form className="flex flex-col gap-4" onSubmit={onSubmit}>
         <FormField
           control={form.control}
           name="username"
-          render={({field}) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Username"
-                  type="text" {...field} />
+                <Input placeholder="Username" type="text" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -52,13 +46,11 @@ export function LoginForm() {
         <FormField
           control={form.control}
           name="password"
-          render={({field}) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="**********"
-                  type="password" {...field} />
+                <Input placeholder="**********" type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -69,13 +61,10 @@ export function LoginForm() {
           <p className="text-destructive text-sm">{errorMessage}</p>
         )}
 
-        <Button
-          disabled={isPending}
-          type="submit"
-        >
-          {isPending ? (<Spinner />) : ("Sign in")}
+        <Button disabled={isPending} type="submit">
+          {isPending ? <Spinner /> : "Sign in"}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

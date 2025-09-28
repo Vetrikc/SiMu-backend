@@ -7,20 +7,22 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger, useSidebar,
+  SidebarTrigger,
+  useSidebar,
 } from "@/shared/ui/kit/sidebar.tsx";
 import {
-  CirclePlus, Handshake,
+  CirclePlus,
+  Handshake,
   HeartPlus,
   Home,
   LibraryBig,
-  UserStar
+  UserStar,
 } from "lucide-react";
-import {Link, useLocation} from "react-router-dom";
-import {ROUTES} from "@/shared/model/routes.tsx";
-import {Button} from "@/shared/ui/kit/button.tsx";
-import {cn} from "@/shared/lib/css.ts";
-import {useIsMobile} from "@/shared/lib/react/use-mobile.ts";
+import { Link, useLocation } from "react-router-dom";
+import { ROUTES } from "@/shared/model/routes.tsx";
+import { Button } from "@/shared/ui/kit/button.tsx";
+import { cn } from "@/shared/lib/css.ts";
+import { useIsMobile } from "@/shared/lib/react/use-mobile.ts";
 
 const LINKS = [
   {
@@ -48,25 +50,23 @@ const LINKS = [
     url: ROUTES.FRIENDS,
     icon: Handshake,
   },
-]
+];
 
 const BUTTONS = [
   {
     title: "Create Playlist",
     icon: CirclePlus,
-  }
-]
+  },
+];
 
 export function AppSidebar() {
-
-  const navigator = useLocation()
-  const isMobile = useIsMobile()
-  const {setOpenMobile, state} = useSidebar()
-
+  const navigator = useLocation();
+  const isMobile = useIsMobile();
+  const { setOpenMobile, state } = useSidebar();
 
   return (
     <>
-      {isMobile && <SidebarTrigger size="lg"/>}
+      {isMobile && <SidebarTrigger size="lg" />}
       <Sidebar
         collapsible="icon"
         variant="floating"
@@ -86,8 +86,16 @@ export function AppSidebar() {
                       asChild
                       size="lg"
                       onClick={() => setOpenMobile(false)}
-                      isActive={(navigator.pathname === link.url) && state === "expanded"}
-                      className={cn(navigator.pathname === link.url && "text-accent-foreground", state === "expanded" ? "hover:bg-accent/50" : "hover:bg-transparent")}
+                      isActive={
+                        navigator.pathname === link.url && state === "expanded"
+                      }
+                      className={cn(
+                        navigator.pathname === link.url &&
+                          "text-accent-foreground",
+                        state === "expanded"
+                          ? "hover:bg-accent/50"
+                          : "hover:bg-transparent",
+                      )}
                     >
                       <Link to={link.url}>
                         <link.icon className="size-9!" />
@@ -103,13 +111,14 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {BUTTONS.map((button) => (
-                  <SidebarMenuItem
-                    key={button.title}
-                  >
+                  <SidebarMenuItem key={button.title}>
                     <SidebarMenuButton
                       asChild
                       size="lg"
-                      className={cn("p-2!", state === "collapsed" && "hover:bg-transparent!")}
+                      className={cn(
+                        "p-2!",
+                        state === "collapsed" && "hover:bg-transparent!",
+                      )}
                       onClick={() => setOpenMobile(false)}
                     >
                       <Button
@@ -128,5 +137,5 @@ export function AppSidebar() {
         </SidebarContent>
       </Sidebar>
     </>
-  )
+  );
 }

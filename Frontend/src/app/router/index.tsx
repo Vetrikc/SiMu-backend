@@ -1,20 +1,28 @@
-import {ROUTES} from "@/shared/model/routes.tsx";
-import {createBrowserRouter} from "react-router-dom";
-import {App} from "../app.tsx";
-import {Providers} from "@/app/providers";
+import { ROUTES } from "@/shared/model/routes.tsx";
+import { createBrowserRouter } from "react-router-dom";
+import { App } from "../app.tsx";
+import { Providers } from "@/app/providers";
 import {
   protectedLoader,
-  ProtectedRoute
+  ProtectedRoute,
 } from "@/app/router/protected-route.tsx";
-import {MainLayout} from "@/app/layout.tsx";
+import { MainLayout } from "@/app/layout.tsx";
 
 export const router = createBrowserRouter([
   {
-    element: <Providers><App /></Providers>,
+    element: (
+      <Providers>
+        <App />
+      </Providers>
+    ),
     children: [
       {
         loader: protectedLoader,
-        element: <MainLayout><ProtectedRoute /></MainLayout>,
+        element: (
+          <MainLayout>
+            <ProtectedRoute />
+          </MainLayout>
+        ),
         children: [
           {
             path: ROUTES.HOME,
@@ -30,13 +38,15 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTES.PROFILE,
-            lazy: () => import("@/features/profile/profile.page.tsx")
-          }, {
+            lazy: () => import("@/features/profile/profile.page.tsx"),
+          },
+          {
             path: ROUTES.ALBUM,
-            lazy: () => import("@/features/album/album.page.tsx")
-          }, {
+            lazy: () => import("@/features/album/album.page.tsx"),
+          },
+          {
             path: ROUTES.PLAYLIST,
-            lazy: () => import("@/features/playlist/playlist.page.tsx")
+            lazy: () => import("@/features/playlist/playlist.page.tsx"),
           },
           {
             path: ROUTES.ARTISTS,
@@ -52,7 +62,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTES.SETTINGS,
-            lazy: () => import("@/features/settings/settings.page.tsx")
+            lazy: () => import("@/features/settings/settings.page.tsx"),
           },
         ],
       },

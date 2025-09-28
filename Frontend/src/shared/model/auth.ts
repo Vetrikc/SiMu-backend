@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from "zod";
 
 const USERNAME = {
   MIN: 2,
@@ -7,8 +7,8 @@ const USERNAME = {
 } as const;
 
 const EMAIL = {
-  MAX: 254
-} as const
+  MAX: 254,
+} as const;
 
 const PASSWORD = {
   MIN: 6,
@@ -17,70 +17,79 @@ const PASSWORD = {
 } as const;
 
 export const loginSchema = z.object({
-  username: z.string()
+  username: z
+    .string()
     .min(USERNAME.MIN, {
-      message: `Username must contain at least ${USERNAME.MIN} characters`
+      message: `Username must contain at least ${USERNAME.MIN} characters`,
     })
     .max(USERNAME.MAX, {
-      message: `Username must not exceed ${USERNAME.MAX} characters`
+      message: `Username must not exceed ${USERNAME.MAX} characters`,
     })
     .regex(USERNAME.PATTERN, {
-      message: 'Username can only contain letters (A-Z, a-z), numbers, hyphens and underscores'
+      message:
+        "Username can only contain letters (A-Z, a-z), numbers, hyphens and underscores",
     })
     .trim(),
 
-  password: z.string()
+  password: z
+    .string()
     .min(PASSWORD.MIN, {
-      message: `Password must contain at least ${PASSWORD.MIN} characters`
+      message: `Password must contain at least ${PASSWORD.MIN} characters`,
     })
     .max(PASSWORD.MAX, {
-      message: `Password must not exceed ${PASSWORD.MAX} characters`
+      message: `Password must not exceed ${PASSWORD.MAX} characters`,
     })
     .regex(PASSWORD.PATTERN, {
-      message: 'Password must contain at least one uppercase letter and one digit'
+      message:
+        "Password must contain at least one uppercase letter and one digit",
     }),
 });
 
+export const registerSchema = z
+  .object({
+    username: z
+      .string()
+      .min(USERNAME.MIN, {
+        message: `Username must contain at least ${USERNAME.MIN} characters`,
+      })
+      .max(USERNAME.MAX, {
+        message: `Username must not exceed ${USERNAME.MAX} characters`,
+      })
+      .regex(USERNAME.PATTERN, {
+        message:
+          "Username can only contain letters, numbers, hyphens and underscores",
+      })
+      .trim(),
 
-export const registerSchema = z.object({
-  username: z.string()
-    .min(USERNAME.MIN, {
-      message: `Username must contain at least ${USERNAME.MIN} characters`
-    })
-    .max(USERNAME.MAX, {
-      message: `Username must not exceed ${USERNAME.MAX} characters`
-    })
-    .regex(USERNAME.PATTERN, {
-      message: 'Username can only contain letters, numbers, hyphens and underscores'
-    })
-    .trim(),
+    email: z
+      .string({
+        message: "Email is required",
+      })
+      .email({
+        message: "Please enter a valid email address",
+      })
+      .max(EMAIL.MAX, { message: "Email cannot exceed 254 characters" })
+      .trim(),
 
-  email: z.string({
-    message: "Email is required"
-  }).email({
-    message: "Please enter a valid email address"
+    password: z
+      .string()
+      .min(PASSWORD.MIN, {
+        message: `Password must contain at least ${PASSWORD.MIN} characters`,
+      })
+      .max(PASSWORD.MAX, {
+        message: `Password must not exceed ${PASSWORD.MAX} characters`,
+      })
+      .regex(PASSWORD.PATTERN, {
+        message:
+          "Password must contain at least one uppercase letter and one digit",
+      }),
+
+    confirmPassword: z.string().optional(),
   })
-    .max(EMAIL.MAX, {message: "Email cannot exceed 254 characters"})
-    .trim(),
-
-  password: z.string()
-    .min(PASSWORD.MIN, {
-      message: `Password must contain at least ${PASSWORD.MIN} characters`
-    })
-    .max(PASSWORD.MAX, {
-      message: `Password must not exceed ${PASSWORD.MAX} characters`
-    })
-    .regex(PASSWORD.PATTERN, {
-      message: 'Password must contain at least one uppercase letter and one digit'
-    }),
-
-  confirmPassword: z.string().optional(),
-})
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Passwords are not equal"
-  })
-
+    message: "Passwords are not equal",
+  });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;

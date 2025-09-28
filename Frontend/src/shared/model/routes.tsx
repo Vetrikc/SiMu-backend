@@ -14,7 +14,7 @@ export const ROUTES = {
   PLAYLIST: "/playlist/:playlistId",
   ARTISTS: "/artists",
   ARTIST: "/artist/:artistId",
-  SETTINGS: "/settings"
+  SETTINGS: "/settings",
 } as const;
 
 export type PathParams = {

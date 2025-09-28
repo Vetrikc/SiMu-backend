@@ -1,4 +1,4 @@
-import { rqClient } from "@/shared/api/instance";
+// import { rqClient } from "@/shared/api/instance";
 import { href, Link } from "react-router-dom";
 import { ROUTES } from "@/shared/model/routes.tsx";
 import {
