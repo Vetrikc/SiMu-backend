@@ -1,7 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { publicFetchClient } from "@/shared/api/instance.ts";
 import type { ROLE } from "@/shared/model/user.ts";
 
 type Session = {
@@ -19,8 +18,6 @@ interface AuthStore {
   removeToken: () => void;
   getFreshToken: () => Promise<string | null>;
 }
-
-let refreshTokenPromise: Promise<string | null> | null = null;
 
 export const useSession = create<AuthStore>()(
   persist(
@@ -46,31 +43,10 @@ export const useSession = create<AuthStore>()(
           const session = jwtDecode<Session>(token);
 
           if (session.exp < Date.now() / 1000 + 1) {
-            if (!refreshTokenPromise) {
-              refreshTokenPromise = publicFetchClient
-                .POST("/api/auth/refresh")
-                .then((r) => r.data?.token ?? null)
-                .then((newToken) => {
-                  if (newToken) {
-                    get().updateToken(newToken);
-                    return newToken;
-                  } else {
-                    get().removeToken();
-                    return null;
-                  }
-                })
-                .finally(() => {
-                  refreshTokenPromise = null;
-                });
-            }
-
-            const newToken = await refreshTokenPromise;
-
-            if (newToken) {
-              return newToken;
-            }
+            get().removeToken();
             return null;
           }
+
           return token;
         } catch (error) {
           console.error("Error in getFreshToken:", error);
