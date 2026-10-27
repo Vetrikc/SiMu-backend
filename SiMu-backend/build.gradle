@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.hidetake.swagger.generator' version '2.19.2'
 }
 
 group = 'org.example.a'
@@ -46,8 +47,21 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.25'
+    swaggerCodegen 'io.swagger:swagger-codegen-cli:2.4.34'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+swaggerSources {
+    petstore {
+        inputFile = file('src/main/resources/petstore.yaml')
+        code {
+            language = 'spring'
+        }
+    }
 }

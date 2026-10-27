@@ -1,0 +1,547 @@
+openapi: 3.1.0
+info:
+  title: "SiMu_backend API"
+  description: "SiMu_backend API"
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: music
+    description: управление мызкой
+  - name: playlists
+    description: управление плейлистами
+  - name: authorization
+    description: авторизация
+  - name: user
+    description: пользователь
+paths:
+  /api/music/{id}:
+    get:
+      tags:
+        - music
+      summary: получить музыку по id
+      security:
+        - bearerAuth: [ ]
+      description: получить музыку по id
+      operationId: "getMusic"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/MusicDTO"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/music:
+    get:
+      tags:
+        - music
+      summary: получить всю музыку
+      security:
+        - bearerAuth: [ ]
+      description: получить всю музыку
+      operationId: "getAllMusic"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/MusicDTO"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - music
+      summary: зыгрузить музыку
+      security:
+        - bearerAuth: [ ]
+      description: зыгрузить музыку
+      operationId: "uploadMusic"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: "object"
+              required:
+                - "file"
+                - "music"
+              properties:
+                file:
+                  type: "string"
+                  format: "binary"
+                music:
+                  $ref: "#/components/schemas/MusicUploadDTO"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/MusicDTO"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "413":
+          $ref: "#/components/responses/FileTooLargeError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/playlists:
+    post:
+      tags:
+        - playlists
+      summary: создать плей лист
+      security:
+        - bearerAuth: [ ]
+      description: ...
+      operationId: "createPlaylist"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaylistRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/PlayList"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/playlists/{playlistId}/tracks/{musicId}:
+    post:
+      tags:
+        - playlists
+      summary: добавить трек в плей лист
+      security:
+        - bearerAuth: [ ]
+      description: ...
+      operationId: "addTrackToPlaylist"
+      parameters:
+        - name: "playlistId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "musicId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/PlayList"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/playlists/{id}:
+    get:
+      tags:
+        - playlists
+      summary: получить плей лист по id
+      security:
+        - bearerAuth: [ ]
+      description: получит
+      operationId: "getPlaylist"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/PlayList"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/signup:
+    post:
+      tags:
+        - authorization
+      summary: зарегистрироваться
+      operationId: "signup"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/signin:
+    post:
+      tags:
+        - authorization
+      summary: авторизироваться
+      operationId: "signin"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/refresh:
+    post:
+      summary: Refresh access token
+      parameters:
+        - in: cookie
+          name: refreshToken
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Access token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        '401':
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/user:
+    get:
+      tags:
+        - user
+      summary: "получить информацию о пользователе"
+      security:
+        - bearerAuth: [ ]
+      operationId: "getUserInfo"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/UserInfoResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/user/playlists:
+    post:
+      tags:
+        - user
+      summary: "добавить плей лист для юзера"
+      security:
+        - bearerAuth: [ ]
+      operationId: "addNowCreatedPlaylistToUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayList"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    get:
+      tags:
+        - user
+      summary: "получить плей листы пользователя"
+      security:
+        - bearerAuth: [ ]
+      operationId: "getUserPlaylists"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/PlayList"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    MusicDTO:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        name:
+          type: "string"
+        artist:
+          type: "string"
+        url:
+          type: "string"
+
+    MusicUploadDTO:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        artist:
+          type: "string"
+
+    CreatePlaylistRequest:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+
+    Music:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        name:
+          type: "string"
+        artist:
+          type: "string"
+        url:
+          type: "string"
+
+    PlayList:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        imageUrl:
+          type: "string"
+        tracks:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Music"
+
+    SignupRequest:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        email:
+          type: "string"
+        password:
+          type: "string"
+
+    SigninRequest:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - message
+        - user
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+
+    UserInfoResponse:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        username:
+          type: "string"
+        password:
+          type: "string"
+        email:
+          type: "string"
+        playlists:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PlayList"
+        roles:
+          type: "array"
+          items:
+            type: "string"
+
+    Error:
+      type: object
+      required:
+        - message
+        - code
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+
+  responses:
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Invalid input data"
+            code: "VALIDATION_ERROR"
+
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Authentication required"
+            code: "UNAUTHORIZED"
+
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Resource not found"
+            code: "NOT_FOUND"
+
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Internal server error"
+            code: "INTERNAL_ERROR"
+
+
+    ConflictError:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Resource already exists"
+            code: "CONFLICT"
+
+
+    FileTooLargeError:
+      description: File too large
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "File size exceeds limit"
+            code: "FILE_TOO_LARGE"

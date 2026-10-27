@@ -40,8 +40,4 @@ public class Music {
         return Objects.equals(id, music.id);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }
