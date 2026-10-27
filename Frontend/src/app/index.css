@@ -118,3 +118,37 @@
     @apply bg-background text-foreground;
   }
 }
+
+input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+
+input[type="search"]::-ms-clear {
+  display: none;
+}
+
+/* Стили для автозаполнения в WebKit браузерах (Chrome, Safari, Edge) */
+input:-webkit-autofill {
+  background-color: transparent !important;
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--accent)) inset !important;
+  -webkit-text-fill-color: white !important;
+  border: none !important;
+  caret-color: white !important;
+}
+
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  background-color: transparent !important;
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--accent)) inset !important;
+  -webkit-text-fill-color: white !important;
+  caret-color: white !important;
+}
+
+/* Плавная анимация для автозаполнения */
+input:-webkit-autofill {
+  transition:
+    background-color 5000s ease-in-out 0s,
+    -webkit-box-shadow 5000s ease-in-out 0s,
+    -webkit-text-fill-color 5000s ease-in-out 0s !important;
+  caret-color: white !important;
+}

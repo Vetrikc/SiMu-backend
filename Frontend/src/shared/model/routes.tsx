@@ -6,9 +6,15 @@ export const ROUTES = {
   REGISTER: "/register",
   SEARCH: "/search",
   LIBRARY: "/library",
-  ACCOUNT: "/account/overview",
+  SONGS: "/songs",
+  FRIENDS: "/friends",
+  FRIEND: "/friend/:friendId",
+  PROFILE: "/account/overview",
   ALBUM: "/album/:albumId",
-  PLAYLIST: "/playlist/:playlistId"
+  PLAYLIST: "/playlist/:playlistId",
+  ARTISTS: "/artists",
+  ARTIST: "/artist/:artistId",
+  SETTINGS: "/settings",
 } as const;
 
 export type PathParams = {
@@ -17,7 +23,13 @@ export type PathParams = {
   };
   [ROUTES.PLAYLIST]: {
     playlistId: string;
-  }
+  };
+  [ROUTES.FRIEND]: {
+    friendId: string;
+  };
+  [ROUTES.ARTIST]: {
+    artistId: string;
+  };
 };
 
 declare module "react-router-dom" {
