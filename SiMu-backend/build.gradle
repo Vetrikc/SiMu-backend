@@ -35,7 +35,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
     implementation 'software.amazon.awssdk:s3:2.20.30' // Пример актуальной версии
     // https://mvnrepository.com/artifact/org.springframework/spring-mock
-    implementation 'org.springframework:spring-mock:2.0.8'
     implementation 'org.springframework.boot:spring-boot-devtools'
     implementation 'org.springframework.boot:spring-boot-devtools'
     // https://mvnrepository.com/artifact/org.aspectj/aspectjweaver
