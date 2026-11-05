@@ -28,6 +28,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // official Google ID token verification (JWKS signature, audience, expiry)
+    implementation 'com.google.api-client:google-api-client:2.7.2'
+    implementation 'com.google.http-client:google-http-client-gson:1.45.0'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.kafka:spring-kafka'

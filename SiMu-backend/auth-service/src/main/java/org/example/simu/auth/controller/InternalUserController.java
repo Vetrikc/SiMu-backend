@@ -45,7 +45,7 @@ public class InternalUserController {
                                                            @Valid @RequestBody RoleUpdateRequest request) {
         var user = userService.updateRoles(id, request.roles());
         return ResponseEntity.ok(new UserDetailsResponse(user.getId(), user.getUsername(), user.getEmail(),
-                user.getRoles(), user.isEmailVerified()));
+                user.getRoles(), user.isEmailVerified(), user.getPassword() != null));
     }
 
     @DeleteMapping("/{id}")

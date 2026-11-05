@@ -46,8 +46,11 @@ public class User extends AuditableEntity implements UserDetails {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @NotBlank(message = "Password must not be blank")
-    @Column(nullable = false)
+    /**
+     * {@code null} for accounts that exist only through an external provider: password login is
+     * then impossible by construction.
+     */
+    @Column
     private String password;
 
     @NotBlank(message = "Email must not be blank")

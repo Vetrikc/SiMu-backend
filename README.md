@@ -111,8 +111,35 @@ How it works:
 - **Audit** - every sign-in attempt (successful or not) is stored in `login_audit` with IP and
   user agent.
 
-OAuth/2FA are intentionally out of scope: there is no external identity provider in the project and
-a TOTP flow would add a second authentication factor without a product decision behind it.
+### Sign in with Google (Authorization Code Flow + PKCE)
+
+```
+GET  /api/v1/auth/oauth2/google            -> 302 to Google (state, nonce, PKCE S256, HttpOnly cookie)
+GET  /api/v1/auth/oauth2/google/callback   -> validates, links the identity, 302 to the frontend with a ticket
+POST /api/v1/auth/oauth2/exchange {ticket} -> {token, refreshToken, expiresIn, refreshExpiresIn}
+```
+
+What is verified, in this order:
+
+1. the pending flow is read **and deleted** from Redis before any validation (`GETDEL`), so a
+   replayed or raced callback finds nothing;
+2. the `state` from Google is compared with the stored one in constant time, and the flow has a
+   10-minute TTL; the flow id also lives in an `HttpOnly; SameSite=Lax` cookie, so a callback
+   coming from another browser has no pending flow;
+3. the code is exchanged server-side with `code_verifier` (PKCE S256) and the client secret in the
+   Basic header;
+4. the ID token is verified with the official `GoogleIdTokenVerifier` (signature against Google
+   JWKS, audience, expiry, issuer) and the nonce is compared with the one stored for this flow;
+5. the identity is matched by `(provider, subject)` - never by e-mail. An existing account is only
+   linked when Google reports `email_verified=true`; otherwise the login is rejected (409). A new
+   account is created without a password, so password login stays impossible for it;
+6. the callback redirects to the frontend with a single-use ticket (60 s); tokens never appear in
+   the URL, the browser history or the access log.
+
+Google access/refresh tokens are not stored: they are needed only to prove identity once.
+
+OAuth/2FA beyond Google are intentionally out of scope: a TOTP flow would add a second factor
+without a product decision behind it, and other providers reuse the same `user_identities` table.
 
 ## Repository structure
 
@@ -170,6 +197,9 @@ Flyway owns the schema of every service (`src/main/resources/db/migration`), Hib
 | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | MinIO | local object storage credentials |
 | `S3_BUCKET`, `S3_REGION`, `S3_PUBLIC_URL` | music-service, MinIO | bucket and the URL the browser uses |
 | `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_PATH_STYLE` | music-service | any S3-compatible provider |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | auth-service | Google login; empty client id disables the endpoint (503) |
+| `OAUTH_FRONTEND_REDIRECT_URI` | auth-service | where the callback sends the browser with the ticket |
+| `OAUTH2_SECURE_COOKIE` | auth-service | set to true behind HTTPS |
 | `CORS_ALLOWED_ORIGINS` | gateway | comma separated origins |
 | `AUTH_SERVICE_URL`, `USER_SERVICE_URL`, `MUSIC_SERVICE_URL`, `PLAYLIST_SERVICE_URL` | gateway/services | downstream base URLs |
 

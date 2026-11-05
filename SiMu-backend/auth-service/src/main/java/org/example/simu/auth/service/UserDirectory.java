@@ -27,7 +27,7 @@ public class UserDirectory {
     public UserDetailsResponse getUserDetails(String username) {
         return userRepository.findUserByUsername(username)
                 .map(user -> new UserDetailsResponse(user.getId(), user.getUsername(), user.getEmail(),
-                        user.getRoles(), user.isEmailVerified()))
+                        user.getRoles(), user.isEmailVerified(), user.getPassword() != null))
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
     }
 

@@ -28,6 +28,17 @@ jwt:
   access-expiration-ms: 3600000
   refresh-expiration-ms: 2592000000
 
+oauth2:
+  google:
+    client-id: test-client-id
+    client-secret: test-client-secret
+    redirect-uri: http://localhost:8081/api/v1/auth/oauth2/google/callback
+    authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+    token-uri: https://oauth2.googleapis.com/token
+    scope: openid email profile
+    frontend-redirect-uri: http://localhost:5173/oauth/callback
+    secure-cookie: false
+
 app:
   public-url: http://localhost:5173
   mail:

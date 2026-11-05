@@ -37,6 +37,14 @@ public class LoginAudit {
     @Column(name = "failure_reason", length = 100)
     private String failureReason;
 
+    /** PASSWORD or GOOGLE - lets an anomaly detector spot a changed sign-in method. */
+    @Column(name = "auth_method", length = 20)
+    private String authMethod;
+
+    /** SHA-256 of the provider subject: correlatable, but not stored in clear text. */
+    @Column(name = "subject_hash", length = 64)
+    private String subjectHash;
+
     @Column(name = "ip", length = 64)
     private String ip;
 

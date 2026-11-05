@@ -55,6 +55,35 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
     }
 
+    @Transactional(readOnly = true)
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+    }
+
+    /**
+     * Creates an account for an external identity: no password, e-mail already verified by the
+     * provider. The same {@code UserRegistered} event is published, so the other services see the
+     * new profile exactly like a password signup.
+     */
+    @Transactional
+    public User createExternalUser(String username, String email) {
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(null);
+        user.setRoles(Set.of("USER"));
+        user.setEmailVerified(true);
+
+        User saved = userRepository.save(user);
+        outboxWriter.append("User", saved.getId(), "UserRegistered",
+                new UserRegisteredEvent(UuidV7.generate(), Instant.now(), saved.getId(),
+                        saved.getUsername(), saved.getEmail()));
+
+        log.info("External account created: id={}, username={}", saved.getId(), saved.getUsername());
+        return saved;
+    }
+
     @Transactional
     public User createUser(String username, String email, String encodedPassword) {
         User user = new User();

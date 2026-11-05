@@ -21,6 +21,7 @@ public class RouterValidator {
             Pattern.compile("^/api/v1/auth/forgot-password$"),
             Pattern.compile("^/api/v1/auth/reset-password$"),
             Pattern.compile("^/api/v1/auth/verify-email$"),
+            Pattern.compile("^/api/v1/auth/oauth2/.*"),
             Pattern.compile("^/actuator/.*")
     );
 

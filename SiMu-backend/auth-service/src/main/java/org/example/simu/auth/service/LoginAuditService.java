@@ -27,12 +27,20 @@ public class LoginAuditService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(Long userId, String username, boolean success, String failureReason,
                        HttpServletRequest request) {
+        record(userId, username, success, failureReason, request, "PASSWORD", null);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void record(Long userId, String username, boolean success, String failureReason,
+                       HttpServletRequest request, String authMethod, String subjectHash) {
         try {
             LoginAudit audit = new LoginAudit();
             audit.setUserId(userId);
             audit.setUsername(trim(username, 255));
             audit.setSuccess(success);
             audit.setFailureReason(trim(failureReason, 100));
+            audit.setAuthMethod(trim(authMethod, 20));
+            audit.setSubjectHash(trim(subjectHash, 64));
             audit.setIp(trim(clientIp(request), 64));
             audit.setUserAgent(trim(request == null ? null : request.getHeader("User-Agent"), 255));
             loginAuditRepository.save(audit);

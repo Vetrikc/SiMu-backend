@@ -46,7 +46,7 @@ public class AccountController {
     public ResponseEntity<MeResponse> me(Authentication authentication) {
         UserDetailsResponse user = userDirectory.getUserDetails(authentication.getName());
         return ResponseEntity.ok(new MeResponse(user.id(), user.username(), user.email(), user.roles(),
-                user.emailVerified(), Instant.now()));
+                user.emailVerified(), user.passwordLoginEnabled(), Instant.now()));
     }
 
     @Operation(summary = "Confirm the e-mail address")

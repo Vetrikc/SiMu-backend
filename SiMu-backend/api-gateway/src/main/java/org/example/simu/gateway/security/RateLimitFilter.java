@@ -35,17 +35,20 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
     private final int signupPerMinute;
     private final int recoveryPerMinute;
     private final int refreshPerMinute;
+    private final int oauthPerMinute;
 
     public RateLimitFilter(ReactiveStringRedisTemplate redis,
                            @Value("${gateway.rate-limit.signin-per-minute:5}") int signinPerMinute,
                            @Value("${gateway.rate-limit.signup-per-minute:5}") int signupPerMinute,
                            @Value("${gateway.rate-limit.recovery-per-minute:3}") int recoveryPerMinute,
-                           @Value("${gateway.rate-limit.refresh-per-minute:30}") int refreshPerMinute) {
+                           @Value("${gateway.rate-limit.refresh-per-minute:30}") int refreshPerMinute,
+                           @Value("${gateway.rate-limit.oauth-per-minute:10}") int oauthPerMinute) {
         this.redis = redis;
         this.signinPerMinute = signinPerMinute;
         this.signupPerMinute = signupPerMinute;
         this.recoveryPerMinute = recoveryPerMinute;
         this.refreshPerMinute = refreshPerMinute;
+        this.oauthPerMinute = oauthPerMinute;
     }
 
     @Override
@@ -78,6 +81,8 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
             case "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password",
                  "/api/v1/auth/verify-email" -> recoveryPerMinute;
             case "/api/v1/auth/refresh", "/api/v1/auth/logout" -> refreshPerMinute;
+            case "/api/v1/auth/oauth2/google", "/api/v1/auth/oauth2/google/callback",
+                 "/api/v1/auth/oauth2/exchange" -> oauthPerMinute;
             default -> 0;
         };
     }
