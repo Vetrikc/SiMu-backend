@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop, 'feature/**' ]
   pull_request:
 
 jobs:
@@ -20,8 +20,8 @@ jobs:
           cache: gradle
       - name: Make Gradle executable
         run: chmod +x gradlew
-      - name: Run backend tests
-        run: ./gradlew clean test
+      - name: Build and test every service
+        run: ./gradlew build --no-daemon
 
   frontend:
     runs-on: ubuntu-latest

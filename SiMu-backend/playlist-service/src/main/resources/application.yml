@@ -1,0 +1,39 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: playlist-service
+  datasource:
+    url: jdbc:mysql://${PLAYLIST_DB_HOST:localhost}:${PLAYLIST_DB_PORT:3306}/${PLAYLIST_DB_NAME:simu_playlist}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    username: ${PLAYLIST_DB_USER:root}
+    password: ${PLAYLIST_DB_PASSWORD:change_me}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+jwt:
+  secret: ${JWT_SECRET:dev-only-secret-change-me-please-32chars-min}
+
+services:
+  music-service:
+    url: ${MUSIC_SERVICE_URL:http://localhost:8084}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

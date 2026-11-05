@@ -1,0 +1,21 @@
+# Tests run on an in-memory database: no MySQL is needed on the build agent.
+spring:
+  datasource:
+    url: jdbc:h2:mem:auth_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+jwt:
+  secret: test-secret-at-least-32-characters-long-for-hs256
+  expiration-ms: 3600000
+
+services:
+  playlist-service:
+    url: http://localhost:18085

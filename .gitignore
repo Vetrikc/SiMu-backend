@@ -6,4 +6,5 @@
 **/out/
 **/minio-data/
 .env
+**/.env
 *.log

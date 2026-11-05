@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+jwt:
+  secret: ${JWT_SECRET:dev-only-secret-change-me-please-32chars-min}
+
+auth-service:
+  url: ${AUTH_SERVICE_URL:http://localhost:8082}
+
+user-service:
+  url: ${USER_SERVICE_URL:http://localhost:8083}
+
+music-service:
+  url: ${MUSIC_SERVICE_URL:http://localhost:8084}
+
+playlist-service:
+  url: ${PLAYLIST_SERVICE_URL:http://localhost:8085}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
