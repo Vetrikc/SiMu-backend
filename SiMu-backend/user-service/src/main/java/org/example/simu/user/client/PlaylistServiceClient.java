@@ -1,6 +1,7 @@
 package org.example.simu.user.client;
 
 import org.example.simu.user.dto.PlaylistRequest;
+import org.example.simu.user.security.InternalApiKeyFilter;
 import org.example.simu.user.dto.PlaylistResponse;
 import org.example.simu.user.exception.PlaylistNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +22,12 @@ public class PlaylistServiceClient {
 
     private final RestClient restClient;
 
-    public PlaylistServiceClient(@Value("${services.playlist-service.url}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    public PlaylistServiceClient(@Value("${services.playlist-service.url}") String baseUrl,
+                                 @Value("${services.internal-api-key:}") String internalApiKey) {
+        this.restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(InternalApiKeyFilter.HEADER, internalApiKey)
+                .build();
     }
 
     public List<PlaylistResponse> getUserPlaylists(Long userId) {

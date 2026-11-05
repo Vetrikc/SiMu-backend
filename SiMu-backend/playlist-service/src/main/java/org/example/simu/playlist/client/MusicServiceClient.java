@@ -1,6 +1,7 @@
 package org.example.simu.playlist.client;
 
 import org.example.simu.playlist.dto.MusicDTO;
+import org.example.simu.playlist.security.InternalApiKeyFilter;
 import org.example.simu.playlist.exception.MusicNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,8 +16,12 @@ public class MusicServiceClient {
 
     private final RestClient restClient;
 
-    public MusicServiceClient(@Value("${services.music-service.url}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    public MusicServiceClient(@Value("${services.music-service.url}") String baseUrl,
+                              @Value("${services.internal-api-key:}") String internalApiKey) {
+        this.restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(InternalApiKeyFilter.HEADER, internalApiKey)
+                .build();
     }
 
     public MusicDTO getMusic(Long musicId) {

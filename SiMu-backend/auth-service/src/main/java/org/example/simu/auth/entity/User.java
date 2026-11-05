@@ -55,6 +55,9 @@ public class User extends AuditableEntity implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")

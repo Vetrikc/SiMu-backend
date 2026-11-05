@@ -26,7 +26,8 @@ public class UserDirectory {
     @Transactional(readOnly = true)
     public UserDetailsResponse getUserDetails(String username) {
         return userRepository.findUserByUsername(username)
-                .map(user -> new UserDetailsResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRoles()))
+                .map(user -> new UserDetailsResponse(user.getId(), user.getUsername(), user.getEmail(),
+                        user.getRoles(), user.isEmailVerified()))
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
     }
 

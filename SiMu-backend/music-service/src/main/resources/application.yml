@@ -43,6 +43,9 @@ s3client:
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
+services:
+  internal-api-key: ${INTERNAL_API_KEY:}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

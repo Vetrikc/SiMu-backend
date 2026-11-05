@@ -26,3 +26,5 @@ s3client:
     music: test-bucket
   accessKey: test
   secretKey: test
+services:
+  internal-api-key: test-internal-key

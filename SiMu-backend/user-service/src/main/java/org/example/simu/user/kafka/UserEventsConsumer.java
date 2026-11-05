@@ -2,6 +2,7 @@ package org.example.simu.user.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.simu.common.event.RoleChangedEvent;
 import org.example.simu.common.event.UserDeletedEvent;
 import org.example.simu.common.event.UserRegisteredEvent;
 import org.example.simu.common.kafka.KafkaTopics;
@@ -39,6 +40,8 @@ public class UserEventsConsumer {
                         objectMapper.readValue(record.value(), UserRegisteredEvent.class));
                 case "UserDeleted" -> projectionService.applyDeleted(
                         objectMapper.readValue(record.value(), UserDeletedEvent.class));
+                case "RoleChanged" -> projectionService.applyRoleChanged(
+                        objectMapper.readValue(record.value(), RoleChangedEvent.class));
                 default -> log.warn("Unknown user event type '{}' at offset {}", eventType, record.offset());
             }
         } catch (Exception e) {

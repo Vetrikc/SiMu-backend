@@ -32,8 +32,30 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public String extractEmail(String token) {
+    public String extractSubject(String token) {
         return extractClaims(token).getSubject();
+    }
+
+    public String extractJti(String token) {
+        return extractClaims(token).getId();
+    }
+
+    /**
+     * @return issuance time in epoch millis (the {@code iatMs} claim, falling back to {@code iat})
+     */
+    public Long extractIssuedAt(String token) {
+        Claims claims = extractClaims(token);
+        Object precise = claims.get("iatMs");
+        if (precise != null) {
+            return Long.valueOf(String.valueOf(precise));
+        }
+        Date issuedAt = claims.getIssuedAt();
+        return issuedAt == null ? null : issuedAt.getTime();
+    }
+
+    public String extractTokenType(String token) {
+        Object typ = extractClaims(token).get("typ");
+        return typ == null ? "access" : String.valueOf(typ);
     }
 
     /**
@@ -45,7 +67,6 @@ public class JwtUtil {
         return raw == null ? null : Long.valueOf(String.valueOf(raw));
     }
 
-    @SuppressWarnings("unchecked")
     public String extractRoles(String token) {
         Object raw = extractClaims(token).get("roles");
         if (raw instanceof java.util.List<?> roles) {
@@ -60,7 +81,7 @@ public class JwtUtil {
 
     public boolean isInvalid(String token) {
         try {
-            return isTokenExpired(token);
+            return isTokenExpired(token) || !"access".equals(extractTokenType(token));
         } catch (Exception e) {
             return true;
         }

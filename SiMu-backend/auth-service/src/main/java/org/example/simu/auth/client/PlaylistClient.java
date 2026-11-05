@@ -1,5 +1,6 @@
 package org.example.simu.auth.client;
 
+import org.example.simu.auth.security.InternalApiKeyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,12 @@ public class PlaylistClient {
 
     private final RestClient restClient;
 
-    public PlaylistClient(@Value("${services.playlist-service.url}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    public PlaylistClient(@Value("${services.playlist-service.url}") String baseUrl,
+                          @Value("${services.internal-api-key:}") String internalApiKey) {
+        this.restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(InternalApiKeyFilter.HEADER, internalApiKey)
+                .build();
     }
 
     public void createDefaultPlaylist(Long userId) {

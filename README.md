@@ -75,6 +75,45 @@ rule; account deletion also propagates through Kafka to the other services.
 **Audit columns.** Every business table has `created_at`, `updated_at` and `deleted_at`, filled by
 JPA lifecycle callbacks (mapped superclass in `common`).
 
+### Authentication and security
+
+`auth-service` is the only place that knows credentials. The public surface:
+
+| Endpoint | What it does |
+| --- | --- |
+| `POST /api/v1/auth/signup` | creates the account, sends the verification mail, returns an access + refresh pair |
+| `POST /api/v1/auth/signin` | returns an access + refresh pair, writes a login-audit row |
+| `POST /api/v1/auth/refresh` | rotates the pair; replay of a rotated token revokes the whole family |
+| `POST /api/v1/auth/logout` | revokes the refresh token and blacklists the access token |
+| `GET /api/v1/auth/me` | current profile and roles |
+| `POST /api/v1/auth/verify-email` | confirms the address with a single-use token |
+| `POST /api/v1/auth/forgot-password` | always 202, sends a reset link if the address exists |
+| `POST /api/v1/auth/reset-password` | sets a new password and revokes every session |
+
+How it works:
+
+- **Access token** - JWT, 1 hour, claims `sub`, `roles`, `userId`, `jti`, `typ=access`, `iatMs`.
+- **Refresh token** - opaque 256-bit value, stored only as a SHA-256 hash, 30 days, rotated on
+  every refresh. Reusing an already rotated token is treated as theft: the whole token family is
+  revoked.
+- **Revocation** - logout writes `auth:revoked:{jti}` to Redis with the remaining TTL; account
+  deletion writes `auth:user-blocked:{userId}`; a role change writes
+  `auth:user-invalid-before:{userId}` (millisecond precision), so tokens issued before the change
+  stop working while freshly issued ones keep the new roles. The gateway checks all three.
+- **Internal API** - `/api/v1/internal/**` requires `X-Internal-Token`; the gateway strips that
+  header from every inbound request, so a client cannot forge service-to-service calls.
+- **Rate limiting** - the gateway keeps a Redis counter per IP and endpoint: 5 sign-ins, 5
+  sign-ups, 3 recovery requests and 30 refreshes per minute.
+- **Password policy** - enforced on the server (`@StrongPassword`): 6-100 characters, at least one
+  uppercase letter and one digit.
+- **E-mail** - verification and reset links go through SMTP; locally they land in MailHog
+  (http://localhost:8025).
+- **Audit** - every sign-in attempt (successful or not) is stored in `login_audit` with IP and
+  user agent.
+
+OAuth/2FA are intentionally out of scope: there is no external identity provider in the project and
+a TOTP flow would add a second authentication factor without a product decision behind it.
+
 ## Repository structure
 
 - `SiMu-backend/` — Gradle multi-module backend
@@ -123,7 +162,11 @@ Flyway owns the schema of every service (`src/main/resources/db/migration`), Hib
 | `USER_DB_*` | user-service | PostgreSQL connection |
 | `REDIS_HOST`, `REDIS_PORT` | auth/user service | cache |
 | `KAFKA_BOOTSTRAP_SERVERS` | auth/user/playlist service | `kafka:9092` inside compose |
-| `JWT_SECRET`, `JWT_EXPIRATION_MS` | gateway + all services | HS256 secret and token lifetime |
+| `JWT_SECRET` | gateway + all services | HS256 secret |
+| `JWT_ACCESS_EXPIRATION_MS`, `JWT_REFRESH_EXPIRATION_MS` | auth-service | token lifetimes (1 h / 30 days) |
+| `INTERNAL_API_KEY` | all services | service-to-service key for `/api/v1/internal/**` |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM`, `APP_PUBLIC_URL` | auth-service | SMTP and the base URL used in e-mail links |
+| `RATE_LIMIT_SIGNIN_PER_MINUTE`, `RATE_LIMIT_SIGNUP_PER_MINUTE`, `RATE_LIMIT_RECOVERY_PER_MINUTE`, `RATE_LIMIT_REFRESH_PER_MINUTE` | gateway | limits per IP |
 | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | MinIO | local object storage credentials |
 | `S3_BUCKET`, `S3_REGION`, `S3_PUBLIC_URL` | music-service, MinIO | bucket and the URL the browser uses |
 | `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_PATH_STYLE` | music-service | any S3-compatible provider |

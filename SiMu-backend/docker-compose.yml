@@ -73,6 +73,15 @@ services:
       retries: 20
     restart: unless-stopped
 
+  # Local SMTP sink: verification / password-reset mails land here (UI http://localhost:8025).
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: simu-mailhog
+    ports:
+      - "${MAIL_UI_PORT:-8025}:8025"
+      - "${MAIL_SMTP_PORT:-1025}:1025"
+    restart: unless-stopped
+
   kafka:
     image: apache/kafka:3.9.0
     container_name: simu-kafka
@@ -166,11 +175,19 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RATE_LIMIT_SIGNIN_PER_MINUTE: ${RATE_LIMIT_SIGNIN_PER_MINUTE:-5}
+      RATE_LIMIT_SIGNUP_PER_MINUTE: ${RATE_LIMIT_SIGNUP_PER_MINUTE:-5}
+      RATE_LIMIT_RECOVERY_PER_MINUTE: ${RATE_LIMIT_RECOVERY_PER_MINUTE:-3}
+      RATE_LIMIT_REFRESH_PER_MINUTE: ${RATE_LIMIT_REFRESH_PER_MINUTE:-30}
       AUTH_SERVICE_URL: http://auth-service:8082
       USER_SERVICE_URL: http://user-service:8083
       MUSIC_SERVICE_URL: http://music-service:8084
       PLAYLIST_SERVICE_URL: http://playlist-service:8085
     depends_on:
+      redis:
+        condition: service_healthy
       auth-service:
         condition: service_healthy
       user-service:
@@ -200,11 +217,19 @@ services:
       REDIS_PORT: 6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      JWT_ACCESS_EXPIRATION_MS: ${JWT_ACCESS_EXPIRATION_MS}
+      JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_FROM: no-reply@simu.local
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL}
       PLAYLIST_SERVICE_URL: http://playlist-service:8085
     depends_on:
       auth-db:
         condition: service_healthy
+      mailhog:
+        condition: service_started
       redis:
         condition: service_healthy
       kafka:
@@ -239,6 +264,7 @@ services:
       REDIS_PORT: 6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       AUTH_SERVICE_URL: http://auth-service:8082
       PLAYLIST_SERVICE_URL: http://playlist-service:8085
     depends_on:
@@ -272,6 +298,7 @@ services:
       MUSIC_DB_USER: root
       MUSIC_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       S3_ENDPOINT: http://minio:9000
       S3_PUBLIC_URL: ${S3_PUBLIC_URL}
       S3_PATH_STYLE: "true"
@@ -309,6 +336,7 @@ services:
       PLAYLIST_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       MUSIC_SERVICE_URL: http://music-service:8084
     depends_on:
       mysql:

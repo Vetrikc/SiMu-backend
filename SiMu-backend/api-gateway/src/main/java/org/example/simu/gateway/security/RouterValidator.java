@@ -8,8 +8,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 /**
- * Lists the paths that may be called without a token.
- * Everything else has to carry a valid {@code Authorization: Bearer ...} header.
+ * Paths that may be called without an access token.
  */
 @Component
 public class RouterValidator {
@@ -17,6 +16,11 @@ public class RouterValidator {
     private static final List<Pattern> OPEN_PATHS = List.of(
             Pattern.compile("^/api/v1/auth/signin$"),
             Pattern.compile("^/api/v1/auth/signup$"),
+            Pattern.compile("^/api/v1/auth/refresh$"),
+            Pattern.compile("^/api/v1/auth/logout$"),
+            Pattern.compile("^/api/v1/auth/forgot-password$"),
+            Pattern.compile("^/api/v1/auth/reset-password$"),
+            Pattern.compile("^/api/v1/auth/verify-email$"),
             Pattern.compile("^/actuator/.*")
     );
 

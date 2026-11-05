@@ -1,6 +1,7 @@
 package org.example.simu.playlist.config;
 
 import org.example.simu.playlist.security.HeaderAuthenticationFilter;
+import org.example.simu.playlist.security.InternalApiKeyFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,9 +26,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final HeaderAuthenticationFilter headerAuthenticationFilter;
+    private final InternalApiKeyFilter internalApiKeyFilter;
 
-    public SecurityConfig(HeaderAuthenticationFilter headerAuthenticationFilter) {
+    public SecurityConfig(HeaderAuthenticationFilter headerAuthenticationFilter,
+                          InternalApiKeyFilter internalApiKeyFilter) {
         this.headerAuthenticationFilter = headerAuthenticationFilter;
+        this.internalApiKeyFilter = internalApiKeyFilter;
     }
 
     @Bean
@@ -40,10 +44,11 @@ public class SecurityConfig {
                         exceptions.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/error").permitAll()
                         .requestMatchers("/api/v1/internal/**").permitAll()
                         .requestMatchers("/api/v1/playlists", "/api/v1/playlists/**").hasRole("USER")
                         .anyRequest().permitAll())
+                .addFilterBefore(internalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

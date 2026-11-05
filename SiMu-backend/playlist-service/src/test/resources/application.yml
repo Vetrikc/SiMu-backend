@@ -24,5 +24,6 @@ jwt:
   secret: test-secret-at-least-32-characters-long-for-hs256
 
 services:
+  internal-api-key: test-internal-key
   music-service:
     url: http://localhost:18084

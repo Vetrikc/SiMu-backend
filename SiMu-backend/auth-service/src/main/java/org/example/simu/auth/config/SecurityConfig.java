@@ -1,6 +1,7 @@
 package org.example.simu.auth.config;
 
 import org.example.simu.auth.security.HeaderAuthenticationFilter;
+import org.example.simu.auth.security.InternalApiKeyFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,9 +30,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final HeaderAuthenticationFilter headerAuthenticationFilter;
+    private final InternalApiKeyFilter internalApiKeyFilter;
 
-    public SecurityConfig(HeaderAuthenticationFilter headerAuthenticationFilter) {
+    public SecurityConfig(HeaderAuthenticationFilter headerAuthenticationFilter,
+                          InternalApiKeyFilter internalApiKeyFilter) {
         this.headerAuthenticationFilter = headerAuthenticationFilter;
+        this.internalApiKeyFilter = internalApiKeyFilter;
     }
 
     @Bean
@@ -45,9 +49,15 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        // Spring Boot dispatches handled exceptions to /error; without this line the
+                        // security chain would answer the error dispatch with 401 and hide the real status
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // guarded by InternalApiKeyFilter, not by the user token
                         .requestMatchers("/api/v1/internal/**").permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(internalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -67,7 +77,7 @@ public class SecurityConfig {
             @Value("${cors.allowed-origins:http://localhost:5173}") List<String> allowedOrigins) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

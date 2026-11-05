@@ -11,9 +11,10 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Declarative routing table of the gateway.
  * <p>
- * Every route first strips the internal {@code X-User-*} headers (so a client cannot spoof another
- * user) and then runs {@link AuthenticationFilter}, which validates the JWT and writes the verified
- * identity back into those headers.
+ * Every route first strips the internal headers ({@code X-User-*} and the service-to-service key)
+ * so a client cannot spoof another user or call an internal endpoint, and then runs
+ * {@link AuthenticationFilter}, which validates the JWT and writes the verified identity back into
+ * the {@code X-User-*} headers.
  */
 @Configuration
 public class GatewayConfig {
@@ -56,6 +57,7 @@ public class GatewayConfig {
                 .removeRequestHeader("X-User-Id")
                 .removeRequestHeader("X-User-Name")
                 .removeRequestHeader("X-User-Roles")
+                .removeRequestHeader("X-Internal-Token")
                 .filter(authenticationFilter);
     }
 }

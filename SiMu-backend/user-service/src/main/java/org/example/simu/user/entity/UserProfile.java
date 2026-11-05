@@ -39,6 +39,9 @@ public class UserProfile extends AuditableEntity {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "roles", nullable = false)
+    private String roles = "USER";
+
     @PrePersist
     void ensureId() {
         if (id == null) {

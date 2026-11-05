@@ -14,11 +14,12 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * JWT check for protected routes (taken from the internship project and adapted to SiMu).
+ * JWT check for protected routes.
  * <p>
- * On success the trusted identity is forwarded to the downstream service inside
- * {@code X-User-Id}, {@code X-User-Name} and {@code X-User-Roles}; the services never parse the
- * token themselves.
+ * Besides the signature and the expiry, the token must not be in the Redis revocation lists
+ * (logout of one token, deletion or role change of a user). On success the trusted identity is
+ * forwarded to the downstream service inside {@code X-User-Id}, {@code X-User-Name} and
+ * {@code X-User-Roles}; the services never parse the token themselves.
  */
 @Component
 public class AuthenticationFilter implements GatewayFilter {
@@ -31,10 +32,12 @@ public class AuthenticationFilter implements GatewayFilter {
 
     private final RouterValidator routerValidator;
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService blacklist;
 
-    public AuthenticationFilter(RouterValidator routerValidator, JwtUtil jwtUtil) {
+    public AuthenticationFilter(RouterValidator routerValidator, JwtUtil jwtUtil, TokenBlacklistService blacklist) {
         this.routerValidator = routerValidator;
         this.jwtUtil = jwtUtil;
+        this.blacklist = blacklist;
     }
 
     @Override
@@ -63,20 +66,28 @@ public class AuthenticationFilter implements GatewayFilter {
             return onError(exchange, "Invalid or expired token", HttpStatus.UNAUTHORIZED);
         }
 
-        ServerHttpRequest modifiedRequest = request.mutate()
-                .header(USER_NAME_HEADER, jwtUtil.extractEmail(token))
-                .header(USER_ROLES_HEADER, jwtUtil.extractRoles(token))
-                .headers(headers -> {
-                    Long userId = jwtUtil.extractUserId(token);
-                    if (userId != null) {
-                        headers.set(USER_ID_HEADER, String.valueOf(userId));
+        String jti = jwtUtil.extractJti(token);
+        Long userId = jwtUtil.extractUserId(token);
+        Long issuedAt = jwtUtil.extractIssuedAt(token);
+
+        return blacklist.isRevoked(jti, userId, issuedAt)
+                .flatMap(revoked -> {
+                    if (Boolean.TRUE.equals(revoked)) {
+                        return onError(exchange, "Token has been revoked", HttpStatus.UNAUTHORIZED);
                     }
-                })
-                .build();
-
-        log.debug("Forwarding {} {} as user {}", request.getMethod(), request.getPath(), jwtUtil.extractEmail(token));
-
-        return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                    ServerHttpRequest modifiedRequest = request.mutate()
+                            .header(USER_NAME_HEADER, jwtUtil.extractSubject(token))
+                            .header(USER_ROLES_HEADER, jwtUtil.extractRoles(token))
+                            .headers(headers -> {
+                                if (userId != null) {
+                                    headers.set(USER_ID_HEADER, String.valueOf(userId));
+                                }
+                            })
+                            .build();
+                    log.debug("Forwarding {} {} as user {}", request.getMethod(), request.getPath(),
+                            jwtUtil.extractSubject(token));
+                    return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                });
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {

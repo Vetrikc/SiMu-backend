@@ -1,5 +1,6 @@
 package org.example.simu.user.service;
 
+import org.example.simu.common.event.RoleChangedEvent;
 import org.example.simu.common.event.UserDeletedEvent;
 import org.example.simu.common.event.UserRegisteredEvent;
 import org.example.simu.user.config.RedisConfig;
@@ -51,6 +52,25 @@ public class ProfileProjectionService {
         processedEventRepository.save(new ProcessedEvent(event.eventId(), "UserRegistered"));
         evict(event.username());
         log.info("Profile projected for user id={}, username={}", event.userId(), event.username());
+    }
+
+    /**
+     * Role changes arrive as an event, so the projection never has to call auth-service on a read.
+     */
+    @Transactional
+    public void applyRoleChanged(RoleChangedEvent event) {
+        if (processedEventRepository.existsById(event.eventId())) {
+            return;
+        }
+
+        userProfileRepository.findByUserId(event.userId()).ifPresent(profile -> {
+            profile.setRoles(String.join(",", event.roles()));
+            userProfileRepository.save(profile);
+            evict(profile.getUsername());
+            log.info("Roles of user id={} projected as {}", event.userId(), event.roles());
+        });
+
+        processedEventRepository.save(new ProcessedEvent(event.eventId(), "RoleChanged"));
     }
 
     @Transactional

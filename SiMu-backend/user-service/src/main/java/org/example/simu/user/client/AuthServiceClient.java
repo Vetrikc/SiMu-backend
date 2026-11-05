@@ -1,6 +1,7 @@
 package org.example.simu.user.client;
 
 import org.example.simu.user.dto.UserDetailsResponse;
+import org.example.simu.user.security.InternalApiKeyFilter;
 import org.example.simu.user.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,8 +17,12 @@ public class AuthServiceClient {
 
     private final RestClient restClient;
 
-    public AuthServiceClient(@Value("${services.auth-service.url}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    public AuthServiceClient(@Value("${services.auth-service.url}") String baseUrl,
+                             @Value("${services.internal-api-key:}") String internalApiKey) {
+        this.restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(InternalApiKeyFilter.HEADER, internalApiKey)
+                .build();
     }
 
     public UserDetailsResponse getUser(String username) {

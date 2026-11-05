@@ -19,6 +19,20 @@ playlist-service:
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8081}
 
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+
+gateway:
+  rate-limit:
+    signin-per-minute: ${RATE_LIMIT_SIGNIN_PER_MINUTE:5}
+    signup-per-minute: ${RATE_LIMIT_SIGNUP_PER_MINUTE:5}
+    recovery-per-minute: ${RATE_LIMIT_RECOVERY_PER_MINUTE:3}
+    refresh-per-minute: ${RATE_LIMIT_REFRESH_PER_MINUTE:30}
+
 management:
   endpoints:
     web:
