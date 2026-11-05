@@ -1,4 +1,6 @@
-.idea/
+.idea/*
+# but keep the VCS mapping, so a fresh clone is attached to Git immediately
+!.idea/vcs.xml
 *.iml
 .gradle/
 **/.gradle/
