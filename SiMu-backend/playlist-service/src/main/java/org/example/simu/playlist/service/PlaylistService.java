@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 /**
  * Owns the {@code playlists}, {@code playlist_music} and {@code user_playlists} tables.
+ * Deleting is always a soft delete.
  */
 @Service
 public class PlaylistService {
@@ -59,10 +60,6 @@ public class PlaylistService {
         return playListRepository.findById(id).map(playlistMapper::toResponse);
     }
 
-    /**
-     * Adds a track to a playlist. The track is validated in {@code music-service} first, because the
-     * {@code music} table is no longer part of this database.
-     */
     @Transactional
     public PlaylistResponse addTrackToPlaylist(Long playlistId, Long musicId) {
         PlayList playList = playListRepository.findById(playlistId)
@@ -79,6 +76,48 @@ public class PlaylistService {
         PlaylistResponse response = playlistMapper.toResponse(playListRepository.save(playList));
         log.info("Music id={} added to playlist id={}", musicId, playlistId);
         return response;
+    }
+
+    /**
+     * Soft-deletes the playlist and every library link that points at it.
+     */
+    @Transactional
+    public void deletePlaylist(Long playlistId) {
+        PlayList playList = playListRepository.findById(playlistId)
+                .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found with ID: " + playlistId));
+
+        playList.markDeleted();
+        playListRepository.save(playList);
+
+        userPlaylistRepository.findByPlaylistId(playlistId).forEach(link -> {
+            link.markDeleted();
+            userPlaylistRepository.save(link);
+        });
+
+        log.info("Playlist soft-deleted: id={}", playlistId);
+    }
+
+    /**
+     * Reacts to a {@code UserDeleted} Kafka event: the user's playlists and library links are
+     * soft-deleted in one local transaction.
+     */
+    @Transactional
+    public void softDeleteUserLibrary(Long userId) {
+        List<UserPlaylist> links = userPlaylistRepository.findByUserIdOrderByIdAsc(userId);
+        if (links.isEmpty()) {
+            return;
+        }
+
+        links.forEach(link -> {
+            link.markDeleted();
+            userPlaylistRepository.save(link);
+            playListRepository.findById(link.getPlaylistId()).ifPresent(playList -> {
+                playList.markDeleted();
+                playListRepository.save(playList);
+            });
+        });
+
+        log.info("Library of user id={} soft-deleted ({} playlists)", userId, links.size());
     }
 
     @Transactional(readOnly = true)
@@ -101,10 +140,6 @@ public class PlaylistService {
                 .toList();
     }
 
-    /**
-     * Creates a playlist and links it to the user in one local transaction - both tables belong to
-     * this service, so no distributed transaction is required.
-     */
     @Transactional
     public PlaylistResponse createPlaylistForUser(Long userId, String name, String description) {
         PlayList playList = new PlayList();

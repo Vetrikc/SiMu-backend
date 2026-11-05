@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -75,6 +76,14 @@ public class PlaylistController {
         PlaylistResponse playlist = playlistService.getPlaylist(id)
                 .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found with ID: " + id));
         return ResponseEntity.ok(playlist);
+    }
+
+    @Operation(summary = "Delete a playlist", description = "Soft-deletes the playlist and its library links")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deletePlaylist(@PathVariable Long id) {
+        playlistService.deletePlaylist(id);
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(PlaylistNotFoundException.class)

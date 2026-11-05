@@ -47,4 +47,17 @@ public class MusicService {
         log.info("Music saved with id={}", saved.getId());
         return musicMapper.toDto(saved);
     }
+
+    /**
+     * Soft delete: the row is kept because playlists in other services reference the id and the
+     * audio object stays restorable.
+     */
+    @Transactional
+    public void deleteMusic(Long id) {
+        Music music = musicRepository.findById(id)
+                .orElseThrow(() -> new MusicNotFoundException("Music record not found with ID: " + id));
+        music.markDeleted();
+        musicRepository.save(music);
+        log.info("Music soft-deleted: id={}", id);
+    }
 }

@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,8 +37,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Public contract for {@code /api/v1/music}. Unchanged behaviour: the file goes to S3 first and
- * only then the metadata row is written.
+ * Public contract for {@code /api/v1/music}. Unchanged behaviour: the file goes to S3/MinIO first
+ * and only then the metadata row is written.
  */
 @Tag(name = "Music", description = "API for managing music records and file uploads")
 @RestController
@@ -117,6 +118,14 @@ public class MusicController {
                 }
             }
         }
+    }
+
+    @Operation(summary = "Delete a track", description = "Soft-deletes the track; playlists keep working")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deleteMusic(@PathVariable Long id) {
+        musicService.deleteMusic(id);
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(MusicNotFoundException.class)

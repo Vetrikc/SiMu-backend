@@ -1,26 +1,30 @@
 # syntax=docker/dockerfile:1
+# The gradle:8.14-jdk21 image already contains Gradle 8.14 (same version as the wrapper),
+# so the build does not depend on downloading the distribution from GitHub.
 FROM gradle:8.14-jdk21 AS build
 ARG MODULE_NAME=playlist-service
 USER root
 WORKDIR /app
+ENV GRADLE_USER_HOME=/gradle-cache
 
-COPY gradlew settings.gradle build.gradle gradle.properties ./
-COPY gradle ./gradle
+COPY settings.gradle build.gradle gradle.properties ./
+COPY common/build.gradle ./common/
 COPY api-gateway/build.gradle ./api-gateway/
 COPY auth-service/build.gradle ./auth-service/
 COPY user-service/build.gradle ./user-service/
 COPY music-service/build.gradle ./music-service/
 COPY playlist-service/build.gradle ./playlist-service/
 
-RUN chmod +x ./gradlew && ./gradlew :${MODULE_NAME}:dependencies --no-daemon -q
+RUN --mount=type=cache,target=/gradle-cache,sharing=locked gradle :${MODULE_NAME}:dependencies --no-daemon -q
 
+COPY common ./common
 COPY api-gateway ./api-gateway
 COPY auth-service ./auth-service
 COPY user-service ./user-service
 COPY music-service ./music-service
 COPY playlist-service ./playlist-service
 
-RUN ./gradlew :${MODULE_NAME}:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/gradle-cache,sharing=locked gradle :${MODULE_NAME}:bootJar -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 ARG MODULE_NAME=playlist-service

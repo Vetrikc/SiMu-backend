@@ -1,7 +1,7 @@
-# Tests run on an in-memory database: no MySQL is needed on the build agent.
+# Unit tests: in-memory database, no Kafka/Redis required.
 spring:
   datasource:
-    url: jdbc:h2:mem:auth_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:auth_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -11,6 +11,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  cache:
+    type: simple
+  kafka:
+    bootstrap-servers: localhost:19092
+    admin:
+      fail-fast: false
 
 jwt:
   secret: test-secret-at-least-32-characters-long-for-hs256

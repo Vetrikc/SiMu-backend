@@ -1,121 +1,135 @@
 # SiMu
 
-SiMu is a music streaming project I started while learning Spring Boot.
-It was my first larger Spring application: I wrote the backend, an early simple UI, and the music
-upload/playback flow. Later I worked on the project together with a frontend developer, so the
-repository also contains a React frontend.
+SiMu is a music streaming project I started while learning Spring Boot. Later I worked on it with a
+frontend developer, so the repository contains both the backend and a React frontend.
 
-The project was never deployed as a public service, but it was useful for learning how a real
-application fits together beyond a basic CRUD API.
+The backend used to be a single Spring Boot application; it is now a set of independently deployable
+services with a gateway, a shared identity directory, caching, an event stream and S3-compatible
+object storage.
 
-## Backend architecture (microservices)
-
-The backend used to be a single Spring Boot application. It is now split into five independently
-deployable Gradle modules that sit behind an API gateway:
+## Architecture
 
 ```
 Frontend (:5173)
       |
       v
-api-gateway (:8081)  -- validates JWT, forwards X-User-Id / X-User-Name / X-User-Roles
-      |
-      +--> auth-service     (:8082)  /api/v1/auth/**      users, roles, JWT issuing
-      +--> user-service     (:8083)  /api/v1/users/**     profile + user playlists (aggregates the two below)
-      +--> playlist-service (:8085)  /api/v1/playlists/** playlists, playlist_music, user_playlists
-      +--> music-service    (:8084)  /api/v1/music/**     track metadata + S3 upload
+api-gateway (:8081) -- validates JWT, strips client identity headers, forwards
+      |                X-User-Id / X-User-Name / X-User-Roles
+      +--> auth-service     (:8082)  /api/v1/auth/**        users, roles, JWT, outbox -> Kafka
+      +--> user-service     (:8083)  /api/v1/users/**       profile read model (Kafka), Redis cache
+      +--> playlist-service (:8085)  /api/v1/playlists/**   playlists, library links, Kafka consumer
+      +--> music-service    (:8084)  /api/v1/music/**       track metadata + S3/MinIO upload
+
+infrastructure (docker-compose):
+  PostgreSQL 16  -- auth-db (:5434), user-db (:5435)     one database per service
+  MySQL 8        -- music + playlist data
+  Redis 7        -- cache of the auth and user read paths
+  Kafka 3.9      -- topic simu.user.events (auth -> user, auth -> playlist)
+  MinIO          -- local S3-compatible storage for audio files (:9000, console :9001)
 ```
 
-| Service | Owns the data | Public API | Internal API |
+| Service | Owns | Public API | Internal API |
 | --- | --- | --- | --- |
 | `api-gateway` | – | everything behind `/api/v1/**` | – |
-| `auth-service` | `users`, `user_roles` | `/api/v1/auth/signup`, `/api/v1/auth/signin` | `/api/v1/internal/users/{username}` |
-| `user-service` | – (aggregator) | `/api/v1/users`, `/api/v1/users/playlists` | – |
-| `playlist-service` | `playlists`, `playlist_music`, `user_playlists` | `/api/v1/playlists/**` | `/api/v1/internal/users/{userId}/playlists`, `.../default-playlist` |
-| `music-service` | `music` + S3 bucket | `/api/v1/music/**` | `/api/v1/internal/music/{id}` |
+| `auth-service` | PostgreSQL `users`, `user_roles`, `outbox_events` | `/api/v1/auth/signup`, `/signin` | `GET/DELETE /api/v1/internal/users/**` |
+| `user-service` | PostgreSQL `user_profiles`, `processed_events` | `/api/v1/users`, `/users/playlists`, `DELETE /users/me` | – |
+| `playlist-service` | MySQL `playlists`, `playlist_music`, `user_playlists` | `/api/v1/playlists/**` | `/api/v1/internal/users/{userId}/playlists` |
+| `music-service` | MySQL `music` + S3 bucket | `/api/v1/music/**` | `/api/v1/internal/music/{id}` |
+| `common` | – (library) | UUID v7 generator, auditable base entity, Kafka event contracts | – |
 
-Notes:
+### Why these pieces
 
-- every service has its own schema (`simu_auth`, `simu_music`, `simu_playlist`);
-- services never read each other's tables, they call each other over HTTP;
-- `/api/v1/internal/**` is not routed by the gateway, so it is unreachable from the internet;
-- the public contract (paths, payloads, status codes) is the same as in the monolith, so the
-  React frontend works without changes.
+**Local S3 with MinIO.** The music service speaks the S3 API only; `S3_ENDPOINT` decides where the
+files really go. Locally that is MinIO: the bucket is created on start and made public-read, so the
+browser can stream tracks straight from `http://localhost:9000/simu-music/...`. The SDK is configured
+with `forcePathStyle=true`, which MinIO requires. Pointing `S3_ENDPOINT`/`S3_PUBLIC_URL` at a real
+S3-compatible provider (Timeweb, AWS, Cloudflare R2) is a configuration-only change.
+
+**PostgreSQL for auth + user.** The identity tables moved to PostgreSQL (`auth-db`), and user-service
+got its own database (`user-db`) for the profile read model. Each service has its own server, schema
+and Flyway migrations - no shared tables.
+
+**Redis caching.** Both read paths are cached: `auth:users` (identity lookups made by other services)
+and `user:profiles` (profile responses). Entries live 10 minutes and are evicted on write/delete or
+when a Kafka event changes the data. The cache holds a typed JSON payload, so Redis never has to
+deserialise arbitrary classes.
+
+**Kafka between auth and the rest.** Signup and account deletion are published as events on
+`simu.user.events`. user-service keeps its profile projection in sync; playlist-service removes the
+library of a deleted account. Delivery is guaranteed by a **transactional outbox**: the event row is
+committed in the same transaction as the user change and a scheduler drains the outbox into Kafka,
+so a committed user change can never lose its event.
+
+**UUID v7.** Used where a new identifier is generated inside the system and does not have to satisfy
+an old contract: event ids, outbox rows, and the surrogate key of the profile projection. v7 is
+time-ordered, so indexes stay append-only instead of being scattered like random v4 UUIDs. Public
+entity ids (`users`, `playlists`, `music`) stay `BIGINT`, because they are part of the OpenAPI
+contract the React frontend was generated from - changing them would break the client for no gain.
+
+**Soft delete.** `users`, `music`, `playlists`, `user_playlists` and `user_profiles` are never physically
+removed: they carry `deleted_at` and are annotated with `@SQLRestriction("deleted_at is null")`, so a
+deleted row disappears from every generated query but stays available for audit and recovery.
+`DELETE /api/v1/users/me`, `DELETE /api/v1/music/{id}` and `DELETE /api/v1/playlists/{id}` follow that
+rule; account deletion also propagates through Kafka to the other services.
+
+**Audit columns.** Every business table has `created_at`, `updated_at` and `deleted_at`, filled by
+JPA lifecycle callbacks (mapped superclass in `common`).
 
 ## Repository structure
 
-- `SiMu-backend/` — Gradle multi-module backend (`api-gateway`, `auth-service`, `user-service`, `music-service`, `playlist-service`)
+- `SiMu-backend/` — Gradle multi-module backend
+  - `common/` — UUID v7, `AuditableEntity`, Kafka event contracts
+  - `api-gateway/`, `auth-service/`, `user-service/`, `music-service/`, `playlist-service/`
+  - `docker-compose.yml`, `.env.example`, `docker/mysql/init/`
 - `Frontend/` — React frontend
 - `SiMu/` — the very first Maven sketch of the project, kept for history
 
-## Backend features
-
-- user registration and authentication;
-- JWT-based security shared by the gateway and the services;
-- music upload and download/streaming;
-- playlists;
-- user and music management;
-- S3-compatible object storage for audio files;
-- MySQL persistence, one schema per service;
-- Swagger/OpenAPI documentation in every service.
-
-## Stack
-
-Backend: Java 21, Spring Boot 3.4, Spring Cloud Gateway, Spring Security, Spring Data JPA, MySQL,
-JWT, S3 API, MapStruct, Lombok, Gradle and Docker.
-
-Frontend: React, TypeScript and Vite.
-
 ## Running the backend
-
-Create the environment file next to `docker-compose.yml`:
 
 ```bash
 cd SiMu-backend
-cp .env.example .env
-```
-
-Fill in the database password, the S3 credentials and a JWT secret (at least 32 characters), then:
-
-```bash
+cp .env.example .env      # fill in passwords and a JWT secret (>= 32 chars)
 docker compose up --build
 ```
 
-Swagger UI:
-
-| Service | URL |
+| What | URL |
 | --- | --- |
 | API gateway | http://localhost:8081 |
-| auth-service | http://localhost:8082/swagger-ui.html |
-| user-service | http://localhost:8083/swagger-ui.html |
-| music-service | http://localhost:8084/swagger-ui.html |
-| playlist-service | http://localhost:8085/swagger-ui.html |
+| auth-service Swagger | http://localhost:8082/swagger-ui.html |
+| user-service Swagger | http://localhost:8083/swagger-ui.html |
+| music-service Swagger | http://localhost:8084/swagger-ui.html |
+| playlist-service Swagger | http://localhost:8085/swagger-ui.html |
+| MinIO console | http://localhost:9001 (user/password from `.env`) |
+| auth database | `localhost:5434`, db `simu_auth` |
+| user database | `localhost:5435`, db `simu_user` |
+| Kafka (from the host) | `localhost:9094` |
 
-## Running without Docker
+Run a service outside Docker: `./gradlew :auth-service:bootRun` (needs the infrastructure containers
+and the env variables below).
 
-Every service can be started on its own (Java 21 required, Gradle wrapper downloads the rest):
+## Database migrations
 
-```bash
-cd SiMu-backend
-./gradlew :auth-service:bootRun      # and the other modules in separate terminals
-```
-
-The services read their configuration from environment variables (`AUTH_DB_*`, `MUSIC_DB_*`,
-`PLAYLIST_DB_*`, `JWT_SECRET`, `S3_*`, `*_SERVICE_URL`); see `.env.example` for the full list.
+Flyway owns the schema of every service (`src/main/resources/db/migration`), Hibernate runs in
+`validate` mode. A new field means a new migration file, not a silent `ddl-auto=update`.
 
 ## Environment variables
 
 | Variable | Used by | Description |
 | --- | --- | --- |
-| `GATEWAY_PORT` | docker-compose | published gateway port (a frontend expects 8081) |
-| `AUTH_SERVICE_PORT`, `USER_SERVICE_PORT`, `MUSIC_SERVICE_PORT`, `PLAYLIST_SERVICE_PORT` | docker-compose | published service ports |
-| `MYSQL_PORT`, `MYSQL_ROOT_PASSWORD` | docker-compose | MySQL access |
-| `AUTH_DB_NAME`, `MUSIC_DB_NAME`, `PLAYLIST_DB_NAME` | auth / music / playlist service | schema names created by `docker/mysql/init` |
-| `JWT_SECRET` | gateway + all services | HS256 secret, must be the same everywhere |
-| `JWT_EXPIRATION_MS` | auth-service | token lifetime (default ~41 days, as before) |
-| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` | music-service | object storage |
-| `CORS_ALLOWED_ORIGINS` | api-gateway | comma separated list of allowed origins |
-| `AUTH_SERVICE_URL`, `USER_SERVICE_URL`, `MUSIC_SERVICE_URL`, `PLAYLIST_SERVICE_URL` | gateway / services | base URLs of the downstream services |
+| `GATEWAY_PORT`, `AUTH_SERVICE_PORT`, `USER_SERVICE_PORT`, `MUSIC_SERVICE_PORT`, `PLAYLIST_SERVICE_PORT` | compose | published ports |
+| `MYSQL_PORT`, `MYSQL_ROOT_PASSWORD` | compose | MySQL for music + playlist |
+| `MUSIC_DB_NAME`, `PLAYLIST_DB_NAME` | music/playlist service | MySQL schema names |
+| `AUTH_DB_*` | auth-service | PostgreSQL connection (host, port, name, user, password) |
+| `USER_DB_*` | user-service | PostgreSQL connection |
+| `REDIS_HOST`, `REDIS_PORT` | auth/user service | cache |
+| `KAFKA_BOOTSTRAP_SERVERS` | auth/user/playlist service | `kafka:9092` inside compose |
+| `JWT_SECRET`, `JWT_EXPIRATION_MS` | gateway + all services | HS256 secret and token lifetime |
+| `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | MinIO | local object storage credentials |
+| `S3_BUCKET`, `S3_REGION`, `S3_PUBLIC_URL` | music-service, MinIO | bucket and the URL the browser uses |
+| `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_PATH_STYLE` | music-service | any S3-compatible provider |
+| `CORS_ALLOWED_ORIGINS` | gateway | comma separated origins |
+| `AUTH_SERVICE_URL`, `USER_SERVICE_URL`, `MUSIC_SERVICE_URL`, `PLAYLIST_SERVICE_URL` | gateway/services | downstream base URLs |
 
 ## Project status
 
-Archived as a monolith; the microservice split lives on the `feature/microservices` branch.
+The monolith lives on `main`; the microservice split is developed on `feature/microservices`.

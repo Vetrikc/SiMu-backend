@@ -14,6 +14,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.simu.common.jpa.AuditableEntity;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,13 +27,16 @@ import java.util.stream.Collectors;
 
 /**
  * Identity of a user: credentials, e-mail and roles.
- * The user's playlists are owned by {@code playlist-service} and are not mapped here any more.
+ * <p>
+ * Soft-deleted rows stay in the table (audit/recovery) but are invisible to every JPA query because
+ * of {@link SQLRestriction}.
  */
 @Entity
 @Table(name = "users")
+@SQLRestriction("deleted_at is null")
 @Getter
 @Setter
-public class User implements UserDetails {
+public class User extends AuditableEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

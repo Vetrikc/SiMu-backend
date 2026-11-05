@@ -11,5 +11,7 @@ public interface UserPlaylistRepository extends JpaRepository<UserPlaylist, Long
 
     List<UserPlaylist> findByUserIdOrderByIdAsc(Long userId);
 
+    List<UserPlaylist> findByPlaylistId(Long playlistId);
+
     boolean existsByUserIdAndPlaylistId(Long userId, Long playlistId);
 }

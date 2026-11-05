@@ -9,19 +9,22 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.simu.common.jpa.AuditableEntity;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
- * Membership of a playlist in a user's library ({@code user_playlists} table).
+ * Membership of a playlist in a user's library ({@code user_playlists}).
  * <p>
- * The table used to be the join table of {@code User.playlists} in the monolith; it is kept with the
- * same name so that the contract of {@code /api/v1/users/playlists} does not change.
+ * The row is soft-deleted when the user or the playlist is removed, so the library can be audited
+ * and restored.
  */
 @Entity
 @Table(name = "user_playlists",
         uniqueConstraints = @UniqueConstraint(name = "uk_user_playlist", columnNames = {"user_id", "playlist_id"}))
+@SQLRestriction("deleted_at is null")
 @Getter
 @Setter
-public class UserPlaylist {
+public class UserPlaylist extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

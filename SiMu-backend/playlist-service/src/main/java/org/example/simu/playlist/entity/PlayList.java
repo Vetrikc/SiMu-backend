@@ -14,6 +14,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.simu.common.jpa.AuditableEntity;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +23,15 @@ import java.util.List;
 /**
  * Playlist aggregate.
  * <p>
- * In the monolith the tracks were a {@code @ManyToMany} to the {@code music} table. Music now lives
- * in another service with its own database, so only the identifiers of the tracks are stored here
- * ({@code playlist_music} table) and the existence of a track is checked through the music service.
+ * Tracks are stored as identifiers ({@code playlist_music}) because the {@code music} table lives in
+ * another service; the existence of a track is validated through music-service.
  */
 @Entity
 @Table(name = "playlists")
+@SQLRestriction("deleted_at is null")
 @Getter
 @Setter
-public class PlayList {
+public class PlayList extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,0 +1,4 @@
+# Keep shell scripts LF so they also run inside Linux containers.
+gradlew text eol=lf
+*.sh  text eol=lf
+*.bat text eol=crlf

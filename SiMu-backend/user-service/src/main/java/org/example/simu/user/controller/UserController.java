@@ -10,11 +10,11 @@ import org.example.simu.user.client.PlaylistServiceClient;
 import org.example.simu.user.dto.ErrorResponse;
 import org.example.simu.user.dto.PlaylistRequest;
 import org.example.simu.user.dto.PlaylistResponse;
-import org.example.simu.user.dto.UserDetailsResponse;
 import org.example.simu.user.dto.UserInfoResponse;
 import org.example.simu.user.exception.PlaylistNotFoundException;
 import org.example.simu.user.exception.UserNotFoundException;
 import org.example.simu.user.security.CurrentUserResolver;
+import org.example.simu.user.service.UserProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +36,8 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * Public contract for {@code /api/v1/users}. The paths and payloads are identical to the monolith;
- * the data is assembled from auth-service (profile) and playlist-service (playlists).
+ * Public contract for {@code /api/v1/users}. The paths and payloads of the monolith are preserved;
+ * the data comes from the local read model (Kafka projection + Redis cache) and playlist-service.
  */
 @Tag(name = "Users", description = "API for managing user information and playlists")
 @RestController
@@ -47,15 +48,18 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    private final AuthServiceClient authServiceClient;
+    private final UserProfileService userProfileService;
     private final PlaylistServiceClient playlistServiceClient;
+    private final AuthServiceClient authServiceClient;
     private final CurrentUserResolver currentUserResolver;
 
-    public UserController(AuthServiceClient authServiceClient,
+    public UserController(UserProfileService userProfileService,
                           PlaylistServiceClient playlistServiceClient,
+                          AuthServiceClient authServiceClient,
                           CurrentUserResolver currentUserResolver) {
-        this.authServiceClient = authServiceClient;
+        this.userProfileService = userProfileService;
         this.playlistServiceClient = playlistServiceClient;
+        this.authServiceClient = authServiceClient;
         this.currentUserResolver = currentUserResolver;
     }
 
@@ -64,8 +68,20 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserInfoResponse> getUserInfo(Authentication authentication) {
         log.info("Fetching user info for: {}", authentication.getName());
-        UserDetailsResponse user = authServiceClient.getUser(authentication.getName());
-        return ResponseEntity.ok(new UserInfoResponse(user.username()));
+        return ResponseEntity.ok(userProfileService.getProfile(authentication.getName()));
+    }
+
+    @Operation(summary = "Delete the current account", description = "Soft-deletes the account and its playlists")
+    @DeleteMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteAccount(Authentication authentication, HttpServletRequest httpRequest) {
+        Long userId = currentUserResolver.resolveUserId(authentication, httpRequest);
+        log.info("Deleting account id={}", userId);
+
+        authServiceClient.deleteUser(userId);
+        userProfileService.deleteProfileByUserId(userId);
+
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Add a new playlist", description = "Creates a new playlist for the authenticated user")

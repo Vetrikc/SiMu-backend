@@ -1,3 +1,4 @@
+# Unit tests: in-memory database, no Kafka required.
 spring:
   datasource:
     url: jdbc:h2:mem:playlist_test;MODE=MySQL;DB_CLOSE_DELAY=-1
@@ -10,6 +11,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  kafka:
+    bootstrap-servers: localhost:19092
+    listener:
+      auto-startup: false
+    admin:
+      fail-fast: false
 
 jwt:
   secret: test-secret-at-least-32-characters-long-for-hs256

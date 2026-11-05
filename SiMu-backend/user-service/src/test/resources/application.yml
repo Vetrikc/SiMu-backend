@@ -1,0 +1,32 @@
+# Unit tests: in-memory database, no Kafka/Redis required.
+spring:
+  datasource:
+    url: jdbc:h2:mem:user_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  cache:
+    type: simple
+  kafka:
+    bootstrap-servers: localhost:19092
+    listener:
+      auto-startup: false
+    admin:
+      fail-fast: false
+
+jwt:
+  secret: test-secret-at-least-32-characters-long-for-hs256
+
+services:
+  auth-service:
+    url: http://localhost:18082
+  playlist-service:
+    url: http://localhost:18085

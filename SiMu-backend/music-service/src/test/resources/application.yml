@@ -1,4 +1,4 @@
-# Tests run on an in-memory database and never touch S3.
+# Unit tests: in-memory database and no S3 calls.
 spring:
   datasource:
     url: jdbc:h2:mem:music_test;MODE=MySQL;DB_CLOSE_DELAY=-1
@@ -11,13 +11,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
 
 jwt:
   secret: test-secret-at-least-32-characters-long-for-hs256
 
 s3client:
   endpoint: http://localhost:19000
-  region: ru-1
+  public-url: http://localhost:19000
+  path-style: true
+  region: us-east-1
   bucket:
     music: test-bucket
   accessKey: test

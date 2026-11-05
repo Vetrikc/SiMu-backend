@@ -8,7 +8,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 /**
- * Reads the identity of a user from {@code auth-service} - the only service that owns the
+ * Reads and deletes accounts in {@code auth-service} - the only service that owns the
  * {@code users} table.
  */
 @Component
@@ -32,6 +32,17 @@ public class AuthServiceClient {
             return response;
         } catch (HttpClientErrorException.NotFound e) {
             throw new UserNotFoundException("User not found: " + username);
+        }
+    }
+
+    public void deleteUser(Long userId) {
+        try {
+            restClient.delete()
+                    .uri("/api/v1/internal/users/{id}", userId)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new UserNotFoundException("User not found: " + userId);
         }
     }
 }

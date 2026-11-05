@@ -1,0 +1,18 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'org.example.simu'
+version = '1.0.0-SNAPSHOT'
+description = 'Shared contracts: uuid v7, auditing base entity, kafka event payloads'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    // Provided by every JPA service at runtime.
+    compileOnly 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+}

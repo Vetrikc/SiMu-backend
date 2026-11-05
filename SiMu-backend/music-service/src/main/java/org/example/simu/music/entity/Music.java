@@ -9,17 +9,23 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.simu.common.jpa.AuditableEntity;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.Objects;
 
 /**
- * Track metadata. The audio file itself lives in S3-compatible storage, referenced by {@code url}.
+ * Track metadata. The audio file itself lives in S3/MinIO storage, referenced by {@code url}.
+ * <p>
+ * Deleting a track only marks the row: playlists of other users keep referring to its id and the
+ * audio object can still be restored.
  */
 @Entity
 @Table(name = "music")
+@SQLRestriction("deleted_at is null")
 @Getter
 @Setter
-public class Music {
+public class Music extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

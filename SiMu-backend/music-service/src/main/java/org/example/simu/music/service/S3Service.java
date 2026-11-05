@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.Objects;
 
 /**
- * Thin wrapper around the S3 client: upload, delete and URL construction for the music bucket.
+ * Thin wrapper around the S3 client: upload, delete and public URL construction for the music bucket.
  */
 @Service
 public class S3Service {
@@ -22,13 +22,16 @@ public class S3Service {
 
     private final S3Client s3Client;
     private final String endpoint;
+    private final String publicUrl;
     private final String musicBucket;
 
     public S3Service(S3Client s3Client,
                      @Value("${s3client.endpoint}") String endpoint,
+                     @Value("${s3client.public-url:${s3client.endpoint}}") String publicUrl,
                      @Value("${s3client.bucket.music}") String musicBucket) {
         this.s3Client = s3Client;
         this.endpoint = endpoint;
+        this.publicUrl = publicUrl;
         this.musicBucket = musicBucket;
     }
 
@@ -40,11 +43,11 @@ public class S3Service {
                     .bucket(musicBucket)
                     .key(key)
                     .build(), file.toPath());
-            String fileUrl = String.format("%s/%s/%s", endpoint, musicBucket, key);
+            String fileUrl = buildPublicUrl(key);
             log.info("File uploaded to bucket: {}, URL: {}", musicBucket, fileUrl);
             return fileUrl;
         } catch (S3Exception e) {
-            log.error("Failed to upload file to S3: bucket={}, key={}", musicBucket, key, e);
+            log.error("Failed to upload file to S3: endpoint={}, bucket={}, key={}", endpoint, musicBucket, key, e);
             throw e;
         }
     }
@@ -61,6 +64,14 @@ public class S3Service {
             log.error("Failed to delete file from S3: bucket={}, key={}", musicBucket, key, e);
             throw e;
         }
+    }
+
+    /**
+     * The browser must be able to reach the object, so the URL is built from the public endpoint
+     * ({@code http://localhost:9000} locally, the CDN/domain in production), not from the internal one.
+     */
+    private String buildPublicUrl(String key) {
+        return String.format("%s/%s/%s", publicUrl, musicBucket, key);
     }
 
     private void validateKey(String key) {

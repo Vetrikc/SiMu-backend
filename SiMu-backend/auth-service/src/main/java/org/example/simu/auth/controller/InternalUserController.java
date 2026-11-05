@@ -3,10 +3,12 @@ package org.example.simu.auth.controller;
 import org.example.simu.auth.dto.ErrorResponse;
 import org.example.simu.auth.dto.UserDetailsResponse;
 import org.example.simu.auth.exception.UserNotFoundException;
+import org.example.simu.auth.service.UserDirectory;
 import org.example.simu.auth.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,24 +16,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Service-to-service API. It is not routed by the gateway, so it is unreachable from the internet.
+ * Service-to-service API. Not routed by the gateway, so it is unreachable from the internet.
  */
 @RestController
 @RequestMapping("/api/v1/internal/users")
 public class InternalUserController {
 
+    private final UserDirectory userDirectory;
     private final UserService userService;
 
-    public InternalUserController(UserService userService) {
+    public InternalUserController(UserDirectory userDirectory, UserService userService) {
+        this.userDirectory = userDirectory;
         this.userService = userService;
     }
 
     @GetMapping(value = "/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDetailsResponse> getUser(@PathVariable String username) {
-        return userService.findByUsername(username)
-                .map(user -> new UserDetailsResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRoles()))
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+        return ResponseEntity.ok(userDirectory.getUserDetails(username));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(UserNotFoundException.class)

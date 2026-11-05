@@ -11,7 +11,12 @@ import software.amazon.awssdk.services.s3.S3Client;
 import java.net.URI;
 
 /**
- * S3-compatible object storage (Timeweb / MinIO / AWS) used for the audio files.
+ * S3-compatible object storage.
+ * <p>
+ * Works both against a managed S3 (Timeweb, AWS) and against MinIO running next to the stack:
+ * {@code forcePathStyle} makes the SDK use {@code http://host:9000/bucket/key} instead of the
+ * virtual-host style {@code http://bucket.host:9000/key}, which MinIO does not serve for arbitrary
+ * host names.
  */
 @Configuration
 public class S3Config {
@@ -28,6 +33,9 @@ public class S3Config {
     @Value("${s3client.region:ru-1}")
     private String region;
 
+    @Value("${s3client.path-style:true}")
+    private boolean pathStyle;
+
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
@@ -35,6 +43,7 @@ public class S3Config {
                         AwsBasicCredentials.create(accessKey, secretKey)))
                 .region(Region.of(region))
                 .endpointOverride(URI.create(endpoint))
+                .forcePathStyle(pathStyle)
                 .build();
     }
 }
