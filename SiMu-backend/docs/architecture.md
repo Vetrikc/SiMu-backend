@@ -217,9 +217,26 @@ docker compose down -v && docker compose up -d --build
 | `GET /api/v1/music`, `GET /api/v1/music/{id}` | music | список и трек |
 | `POST /api/v1/music` | music | загрузка (multipart) |
 | `DELETE /api/v1/music/{id}` | music | мягкое удаление |
-| `GET /api/v1/playlists/{id}` | playlist | плейлист |
-| `POST /api/v1/playlists/{id}/tracks/{musicId}` | playlist | добавить трек |
-| `DELETE /api/v1/playlists/{id}` | playlist | мягкое удаление |
+| `GET /api/v1/playlists/{id}` | playlist | плейлист (только свой, чужой id → 404) |
+| `POST /api/v1/playlists/{id}/tracks/{musicId}` | playlist | добавить трек (только в свой) |
+| `DELETE /api/v1/playlists/{id}` | playlist | мягкое удаление (только своего) |
+
+### Проверка владения
+
+Плейлист доступен только через **живую ссылку в библиотеке вызывающего**:
+
+```java
+private void requireOwned(Long playlistId, Long userId) {
+    if (!userPlaylistRepository.existsByUserIdAndPlaylistId(userId, playlistId)) {
+        throw new PlaylistNotFoundException("Playlist not found with ID: " + playlistId);   // 404
+    }
+}
+```
+
+- `userId` берётся из `X-User-Id` (его ставит шлюз после проверки JWT), а не из URL или тела;
+- проверка стоит первой строкой в каждом методе по id (чтение, добавление трека, удаление);
+- чужой id отвечает **404**, а не 403: нельзя проверить, существует ли плейлист;
+- мягко удалённые ссылки не учитываются (`@SQLRestriction("deleted_at is null")`), поэтому удалённый плейлист так же невидим.
 
 ### Внутреннее (без шлюза, `X-Internal-Token`)
 

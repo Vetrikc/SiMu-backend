@@ -45,23 +45,15 @@ public class PlaylistService {
         this.musicServiceClient = musicServiceClient;
     }
 
-    @Transactional
-    public PlaylistResponse createPlaylist(String name, String description) {
-        PlayList playList = new PlayList();
-        playList.setName(name);
-        playList.setDescription(description);
-        PlayList saved = playListRepository.save(playList);
-        log.info("Playlist created: id={}", saved.getId());
-        return playlistMapper.toResponse(saved);
-    }
-
     @Transactional(readOnly = true)
-    public Optional<PlaylistResponse> getPlaylist(Long id) {
+    public Optional<PlaylistResponse> getPlaylist(Long id, Long userId) {
+        requireOwned(id, userId);
         return playListRepository.findById(id).map(playlistMapper::toResponse);
     }
 
     @Transactional
-    public PlaylistResponse addTrackToPlaylist(Long playlistId, Long musicId) {
+    public PlaylistResponse addTrackToPlaylist(Long playlistId, Long musicId, Long userId) {
+        requireOwned(playlistId, userId);
         PlayList playList = playListRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found with ID: " + playlistId));
 
@@ -79,10 +71,21 @@ public class PlaylistService {
     }
 
     /**
+     * A playlist is only reachable through a live library link of the caller, so a foreign id
+     * answers 404 instead of 403: the caller must not learn whether the playlist exists.
+     */
+    private void requireOwned(Long playlistId, Long userId) {
+        if (!userPlaylistRepository.existsByUserIdAndPlaylistId(userId, playlistId)) {
+            throw new PlaylistNotFoundException("Playlist not found with ID: " + playlistId);
+        }
+    }
+
+    /**
      * Soft-deletes the playlist and every library link that points at it.
      */
     @Transactional
-    public void deletePlaylist(Long playlistId) {
+    public void deletePlaylist(Long playlistId, Long userId) {
+        requireOwned(playlistId, userId);
         PlayList playList = playListRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found with ID: " + playlistId));
 
