@@ -32,8 +32,8 @@ infrastructure (docker-compose):
 | --- | --- | --- | --- |
 | `api-gateway` | – | everything behind `/api/v1/**` | – |
 | `auth-service` | PostgreSQL `users`, `user_roles`, `outbox_events` | `/api/v1/auth/signup`, `/signin` | `GET/DELETE /api/v1/internal/users/**` |
-| `user-service` | PostgreSQL `user_profiles`, `processed_events` | `/api/v1/users`, `/users/playlists`, `DELETE /users/me` | – |
-| `playlist-service` | PostgreSQL `playlists`, `playlist_music`, `user_playlists` | `/api/v1/playlists/**` | `/api/v1/internal/users/{userId}/playlists` |
+| `user-service` | PostgreSQL `user_profiles`, `processed_events` | `GET /api/v1/users`, `DELETE /users/me` | – |
+| `playlist-service` | PostgreSQL `playlists`, `playlist_music`, `user_playlists` | `/api/v1/playlists/**`, `/api/v1/me/playlists` (library) | `/api/v1/internal/users/{userId}/default-playlist` |
 | `music-service` | PostgreSQL `music` + S3 bucket | `/api/v1/music/**` | `/api/v1/internal/music/{id}` |
 | `common` | – (library) | UUID v7 generator, auditable base entity, Kafka event contracts | – |
 

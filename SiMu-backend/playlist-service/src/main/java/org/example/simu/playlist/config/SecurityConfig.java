@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/error").permitAll()
                         .requestMatchers("/api/v1/internal/**").permitAll()
+                        .requestMatchers("/api/v1/me/**").hasRole("USER")
                         .requestMatchers("/api/v1/playlists", "/api/v1/playlists/**").hasRole("USER")
                         .anyRequest().permitAll())
                 .addFilterBefore(internalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)

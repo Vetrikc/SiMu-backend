@@ -25,9 +25,9 @@
 |---|---|---|---|---|
 | `api-gateway` | 8081 | Spring Cloud Gateway (WebFlux) | маршрутизация, проверка JWT, чёрный список, rate limit, CORS | — |
 | `auth-service` | 8082 | Spring MVC, Security, JPA, Kafka, Redis, Mail, Google API | identity: users, роли, JWT, refresh-ротация, e-mail, OAuth, аудит | `simu_auth` |
-| `user-service` | 8083 | Spring MVC, JPA, Kafka, Redis | профиль пользователя (проекция), агрегатор библиотеки | `simu_user` |
+| `user-service` | 8083 | Spring MVC, JPA, Kafka, Redis | профиль пользователя (проекция + кэш), fallback в auth-service | `simu_user` |
 | `music-service` | 8084 | Spring MVC, JPA, AWS S3 SDK | метаданные треков, загрузка файлов | `simu_music` |
-| `playlist-service` | 8085 | Spring MVC, JPA, Kafka | плейлисты, треки в плейлистах, библиотека | `simu_playlist` |
+| `playlist-service` | 8085 | Spring MVC, JPA, Kafka | плейлисты, треки, библиотека пользователя (`/api/v1/me/playlists`) | `simu_playlist` |
 | `web-client` | 8090 | Spring MVC + Thymeleaf | UI, серверная сессия с токенами | — |
 
 Общий модуль `common` (библиотека, не сервис): `UuidV7`, `AuditableEntity` (created/updated/deleted),
@@ -212,7 +212,7 @@ docker compose down -v && docker compose up -d --build
 | `POST /api/v1/auth/reset-password` | auth | новый пароль, отзыв сессий |
 | `GET /api/v1/auth/oauth2/google` + `/callback` + `POST /exchange` | auth | вход через Google |
 | `GET /api/v1/users` | user | профиль |
-| `GET/POST /api/v1/users/playlists` | user | библиотека |
+| `GET/POST /api/v1/me/playlists` | playlist | библиотека текущего пользователя (userId из `X-User-Id`) |
 | `DELETE /api/v1/users/me` | user | удаление аккаунта |
 | `GET /api/v1/music`, `GET /api/v1/music/{id}` | music | список и трек |
 | `POST /api/v1/music` | music | загрузка (multipart) |
@@ -229,7 +229,6 @@ docker compose down -v && docker compose up -d --build
 | `DELETE /api/v1/internal/users/{id}` | user | удаление аккаунта |
 | `PATCH /api/v1/internal/users/{id}/roles` | admin/ops | смена ролей |
 | `POST /api/v1/internal/users/{userId}/default-playlist` | auth | плейлист «Favorites» при регистрации |
-| `GET/POST /api/v1/internal/users/{userId}/playlists` | user | библиотека |
 | `GET /api/v1/internal/music/{id}` | playlist | проверка существования трека |
 
 ---

@@ -289,7 +289,6 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       AUTH_SERVICE_URL: http://auth-service:8082
-      PLAYLIST_SERVICE_URL: http://playlist-service:8085
     depends_on:
       user-db:
         condition: service_healthy

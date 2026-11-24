@@ -53,8 +53,6 @@ services:
   internal-api-key: ${INTERNAL_API_KEY:}
   auth-service:
     url: ${AUTH_SERVICE_URL:http://localhost:8082}
-  playlist-service:
-    url: ${PLAYLIST_SERVICE_URL:http://localhost:8085}
 
 springdoc:
   swagger-ui:

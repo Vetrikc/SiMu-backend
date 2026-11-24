@@ -46,6 +46,10 @@ public class GatewayConfig {
                 .route("playlist-service", r -> r.path("/api/v1/playlists/**")
                         .filters(f -> secure(f, authenticationFilter))
                         .uri(playlistUrl))
+                // my library: owned by playlist-service, no proxy hop through user-service
+                .route("playlist-service-me", r -> r.path("/api/v1/me/**")
+                        .filters(f -> secure(f, authenticationFilter))
+                        .uri(playlistUrl))
                 .route("music-service", r -> r.path("/api/v1/music/**")
                         .filters(f -> secure(f, authenticationFilter))
                         .uri(musicUrl))
