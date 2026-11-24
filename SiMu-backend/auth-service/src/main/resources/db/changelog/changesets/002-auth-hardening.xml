@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Refresh tokens (rotation + reuse detection), e-mail tokens, login audit, e-mail flag. -->
+    <changeSet id="002-01-email-verified" author="simu">
+        <addColumn tableName="users">
+            <column name="email_verified" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="002-02-refresh-tokens" author="simu">
+        <createTable tableName="refresh_tokens">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="token_hash" type="varchar(64)"><constraints nullable="false"/></column>
+            <column name="family_id" type="uuid"><constraints nullable="false"/></column>
+            <column name="expires_at" type="timestamptz"><constraints nullable="false"/></column>
+            <column name="revoked_at" type="timestamptz"/>
+            <column name="replaced_by" type="uuid"/>
+            <column name="user_agent" type="varchar(255)"/>
+            <column name="ip" type="varchar(64)"/>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="refresh_tokens" columnNames="token_hash"
+                             constraintName="uk_refresh_tokens_hash"/>
+        <addForeignKeyConstraint baseTableName="refresh_tokens" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_refresh_tokens_user" onDelete="CASCADE"/>
+        <createIndex tableName="refresh_tokens" indexName="ix_refresh_tokens_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="refresh_tokens" indexName="ix_refresh_tokens_family">
+            <column name="family_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-03-email-tokens" author="simu">
+        <createTable tableName="email_tokens">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="token_hash" type="varchar(64)"><constraints nullable="false"/></column>
+            <column name="type" type="varchar(30)"><constraints nullable="false"/></column>
+            <column name="expires_at" type="timestamptz"><constraints nullable="false"/></column>
+            <column name="used_at" type="timestamptz"/>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="email_tokens" columnNames="token_hash"
+                             constraintName="uk_email_tokens_hash"/>
+        <addForeignKeyConstraint baseTableName="email_tokens" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_email_tokens_user" onDelete="CASCADE"/>
+        <createIndex tableName="email_tokens" indexName="ix_email_tokens_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-04-login-audit" author="simu">
+        <createTable tableName="login_audit">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="bigint"/>
+            <column name="username" type="varchar(255)"/>
+            <column name="success" type="boolean"><constraints nullable="false"/></column>
+            <column name="failure_reason" type="varchar(100)"/>
+            <column name="ip" type="varchar(64)"/>
+            <column name="user_agent" type="varchar(255)"/>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+        </createTable>
+        <!-- DESC ordering is not expressible with createIndex -->
+        <sql>CREATE INDEX ix_login_audit_user_created ON login_audit (user_id, created_at DESC)</sql>
+        <sql>CREATE INDEX ix_login_audit_created ON login_audit (created_at DESC)</sql>
+    </changeSet>
+
+</databaseChangeLog>

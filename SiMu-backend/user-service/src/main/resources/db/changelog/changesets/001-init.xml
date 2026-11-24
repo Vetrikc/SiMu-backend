@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Local read model of the accounts (filled from Kafka) + idempotency table. -->
+    <changeSet id="001-01-user-profiles" author="simu">
+        <createTable tableName="user_profiles">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="username" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="email" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="timestamptz"/>
+        </createTable>
+        <!-- one live profile per account and per username -->
+        <sql>CREATE UNIQUE INDEX ux_user_profiles_user_id_active ON user_profiles (user_id) WHERE deleted_at IS NULL</sql>
+        <sql>CREATE UNIQUE INDEX ux_user_profiles_username_active ON user_profiles (username) WHERE deleted_at IS NULL</sql>
+        <createIndex tableName="user_profiles" indexName="ix_user_profiles_username">
+            <column name="username"/>
+        </createIndex>
+        <createIndex tableName="user_profiles" indexName="ix_user_profiles_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="001-02-processed-events" author="simu">
+        <createTable tableName="processed_events">
+            <column name="event_id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="event_type" type="varchar(100)"><constraints nullable="false"/></column>
+            <column name="processed_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- External identities (Google today, GitHub/Apple later) + nullable password. -->
+    <changeSet id="003-01-password-nullable" author="simu">
+        <dropNotNullConstraint tableName="users" columnName="password" columnDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="003-02-user-identities" author="simu">
+        <createTable tableName="user_identities">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="provider" type="varchar(30)"><constraints nullable="false"/></column>
+            <column name="subject" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="email" type="varchar(255)"/>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="timestamptz"/>
+        </createTable>
+        <!-- an identity is unique per provider: this is what makes find-or-create race-safe -->
+        <addUniqueConstraint tableName="user_identities" columnNames="provider, subject"
+                             constraintName="uk_user_identities_provider_subject"/>
+        <addForeignKeyConstraint baseTableName="user_identities" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_user_identities_user" onDelete="CASCADE"/>
+        <createIndex tableName="user_identities" indexName="ix_user_identities_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="003-03-audit-auth-method" author="simu">
+        <addColumn tableName="login_audit">
+            <column name="auth_method" type="varchar(20)"/>
+            <column name="subject_hash" type="varchar(64)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-01-playlists" author="simu">
+        <createTable tableName="playlists">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="description" type="varchar(255)"/>
+            <column name="image_url" type="varchar(255)"/>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="timestamptz"/>
+        </createTable>
+        <createIndex tableName="playlists" indexName="ix_playlists_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Ordered list of track ids; music rows live in music-service, so no FK on music_id. -->
+    <changeSet id="001-02-playlist-music" author="simu">
+        <createTable tableName="playlist_music">
+            <column name="playlist_id" type="bigint"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="position" type="int"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="music_id" type="bigint"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="playlist_music" baseColumnNames="playlist_id"
+                                 referencedTableName="playlists" referencedColumnNames="id"
+                                 constraintName="fk_playlist_music_playlist" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="001-03-user-playlists" author="simu">
+        <createTable tableName="user_playlists">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="playlist_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="timestamptz"/>
+        </createTable>
+        <addUniqueConstraint tableName="user_playlists" columnNames="user_id, playlist_id"
+                             constraintName="uk_user_playlist"/>
+        <addForeignKeyConstraint baseTableName="user_playlists" baseColumnNames="playlist_id"
+                                 referencedTableName="playlists" referencedColumnNames="id"
+                                 constraintName="fk_user_playlists_playlist" onDelete="CASCADE"/>
+        <createIndex tableName="user_playlists" indexName="ix_user_playlists_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="user_playlists" indexName="ix_user_playlists_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Identity tables + transactional outbox used to publish user lifecycle events to Kafka. -->
+    <changeSet id="001-01-users" author="simu">
+        <createTable tableName="users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="email" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="password" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="timestamptz"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-02-users-indexes" author="simu">
+        <!-- Partial unique indexes: a soft-deleted account must not block a new registration
+             with the same username/e-mail, while active accounts stay unique. -->
+        <sql>CREATE UNIQUE INDEX ux_users_username_active ON users (username) WHERE deleted_at IS NULL</sql>
+        <sql>CREATE UNIQUE INDEX ux_users_email_active ON users (email) WHERE deleted_at IS NULL</sql>
+        <createIndex tableName="users" indexName="ix_users_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="001-03-user-roles" author="simu">
+        <createTable tableName="user_roles">
+            <column name="user_id" type="bigint"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="role" type="varchar(255)"><constraints nullable="false" primaryKey="true"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_user_roles_user" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="001-04-outbox" author="simu">
+        <createTable tableName="outbox_events">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="aggregate_type" type="varchar(50)"><constraints nullable="false"/></column>
+            <column name="aggregate_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="event_type" type="varchar(100)"><constraints nullable="false"/></column>
+            <column name="payload" type="text"><constraints nullable="false"/></column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="published_at" type="timestamptz"/>
+            <column name="attempts" type="int" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="last_error" type="varchar(500)"/>
+        </createTable>
+        <!-- The publisher only scans unpublished rows, so keep that slice tiny. -->
+        <sql>CREATE INDEX ix_outbox_events_unpublished ON outbox_events (created_at) WHERE published_at IS NULL</sql>
+    </changeSet>
+
+</databaseChangeLog>

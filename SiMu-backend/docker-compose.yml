@@ -4,22 +4,40 @@ services:
   # ---------------------------------------------------------------------------
   # Infrastructure
   # ---------------------------------------------------------------------------
-  mysql:
-    image: mysql:8.0
-    container_name: simu-mysql
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+  music-db:
+    image: postgres:16-alpine
+    container_name: simu-music-db
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      POSTGRES_DB: ${MUSIC_DB_NAME}
+      POSTGRES_USER: ${MUSIC_DB_USER}
+      POSTGRES_PASSWORD: ${MUSIC_DB_PASSWORD}
     ports:
-      - "${MYSQL_PORT:-3306}:3306"
+      - "${MUSIC_DB_EXPOSED_PORT:-5436}:5432"
     volumes:
-      - mysql-data:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+      - music-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U ${MUSIC_DB_USER} -d ${MUSIC_DB_NAME}"]
       interval: 5s
       timeout: 3s
-      retries: 30
+      retries: 20
+    restart: unless-stopped
+
+  playlist-db:
+    image: postgres:16-alpine
+    container_name: simu-playlist-db
+    environment:
+      POSTGRES_DB: ${PLAYLIST_DB_NAME}
+      POSTGRES_USER: ${PLAYLIST_DB_USER}
+      POSTGRES_PASSWORD: ${PLAYLIST_DB_PASSWORD}
+    ports:
+      - "${PLAYLIST_DB_EXPOSED_PORT:-5437}:5432"
+    volumes:
+      - playlist-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PLAYLIST_DB_USER} -d ${PLAYLIST_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     restart: unless-stopped
 
   auth-db:
@@ -297,11 +315,11 @@ services:
     ports:
       - "${MUSIC_SERVICE_PORT:-8084}:8084"
     environment:
-      MUSIC_DB_HOST: mysql
-      MUSIC_DB_PORT: 3306
+      MUSIC_DB_HOST: music-db
+      MUSIC_DB_PORT: 5432
       MUSIC_DB_NAME: ${MUSIC_DB_NAME}
-      MUSIC_DB_USER: root
-      MUSIC_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MUSIC_DB_USER: ${MUSIC_DB_USER}
+      MUSIC_DB_PASSWORD: ${MUSIC_DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       S3_ENDPOINT: http://minio:9000
@@ -312,7 +330,7 @@ services:
       S3_ACCESS_KEY: ${MINIO_ROOT_USER}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
     depends_on:
-      mysql:
+      music-db:
         condition: service_healthy
       minio:
         condition: service_healthy
@@ -334,17 +352,17 @@ services:
     ports:
       - "${PLAYLIST_SERVICE_PORT:-8085}:8085"
     environment:
-      PLAYLIST_DB_HOST: mysql
-      PLAYLIST_DB_PORT: 3306
+      PLAYLIST_DB_HOST: playlist-db
+      PLAYLIST_DB_PORT: 5432
       PLAYLIST_DB_NAME: ${PLAYLIST_DB_NAME}
-      PLAYLIST_DB_USER: root
-      PLAYLIST_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PLAYLIST_DB_USER: ${PLAYLIST_DB_USER}
+      PLAYLIST_DB_PASSWORD: ${PLAYLIST_DB_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       MUSIC_SERVICE_URL: http://music-service:8084
     depends_on:
-      mysql:
+      playlist-db:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -357,7 +375,8 @@ services:
     restart: unless-stopped
 
 volumes:
-  mysql-data:
+  music-db-data:
+  playlist-db-data:
   auth-db-data:
   user-db-data:
   redis-data:

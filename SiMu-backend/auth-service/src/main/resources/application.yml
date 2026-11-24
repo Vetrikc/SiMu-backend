@@ -20,9 +20,9 @@ spring:
         jdbc:
           batch_size: 20
         order_inserts: true
-  flyway:
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
-    locations: classpath:db/migration
   cache:
     type: redis
   data:

@@ -21,11 +21,11 @@ api-gateway (:8081) -- validates JWT, strips client identity headers, forwards
       +--> music-service    (:8084)  /api/v1/music/**       track metadata + S3/MinIO upload
 
 infrastructure (docker-compose):
-  PostgreSQL 16  -- auth-db (:5434), user-db (:5435)     one database per service
-  MySQL 8        -- music + playlist data
-  Redis 7        -- cache of the auth and user read paths
+  PostgreSQL 16  -- auth-db (:5434), user-db (:5435), music-db (:5436), playlist-db (:5437)
+  Redis 7        -- cache, token revocation, rate limiting, OAuth flow state
   Kafka 3.9      -- topic simu.user.events (auth -> user, auth -> playlist)
   MinIO          -- local S3-compatible storage for audio files (:9000, console :9001)
+  MailHog        -- local SMTP for verification/reset mails (:1025, UI :8025)
 ```
 
 | Service | Owns | Public API | Internal API |
@@ -33,8 +33,8 @@ infrastructure (docker-compose):
 | `api-gateway` | – | everything behind `/api/v1/**` | – |
 | `auth-service` | PostgreSQL `users`, `user_roles`, `outbox_events` | `/api/v1/auth/signup`, `/signin` | `GET/DELETE /api/v1/internal/users/**` |
 | `user-service` | PostgreSQL `user_profiles`, `processed_events` | `/api/v1/users`, `/users/playlists`, `DELETE /users/me` | – |
-| `playlist-service` | MySQL `playlists`, `playlist_music`, `user_playlists` | `/api/v1/playlists/**` | `/api/v1/internal/users/{userId}/playlists` |
-| `music-service` | MySQL `music` + S3 bucket | `/api/v1/music/**` | `/api/v1/internal/music/{id}` |
+| `playlist-service` | PostgreSQL `playlists`, `playlist_music`, `user_playlists` | `/api/v1/playlists/**` | `/api/v1/internal/users/{userId}/playlists` |
+| `music-service` | PostgreSQL `music` + S3 bucket | `/api/v1/music/**` | `/api/v1/internal/music/{id}` |
 | `common` | – (library) | UUID v7 generator, auditable base entity, Kafka event contracts | – |
 
 ### Why these pieces
@@ -45,9 +45,10 @@ browser can stream tracks straight from `http://localhost:9000/simu-music/...`. 
 with `forcePathStyle=true`, which MinIO requires. Pointing `S3_ENDPOINT`/`S3_PUBLIC_URL` at a real
 S3-compatible provider (Timeweb, AWS, Cloudflare R2) is a configuration-only change.
 
-**PostgreSQL for auth + user.** The identity tables moved to PostgreSQL (`auth-db`), and user-service
-got its own database (`user-db`) for the profile read model. Each service has its own server, schema
-and Flyway migrations - no shared tables.
+**PostgreSQL everywhere.** Every stateful service has its own PostgreSQL instance and schema:
+`auth-db` (identity), `user-db` (profile read model), `music-db` (tracks), `playlist-db`
+(playlists and library). No shared tables and no cross-database foreign keys - consistency between
+services is kept by HTTP calls and Kafka events.
 
 **Redis caching.** Both read paths are cached: `auth:users` (identity lookups made by other services)
 and `user:profiles` (profile responses). Entries live 10 minutes and are evicted on write/delete or
@@ -146,7 +147,7 @@ without a product decision behind it, and other providers reuse the same `user_i
 - `SiMu-backend/` — Gradle multi-module backend
   - `common/` — UUID v7, `AuditableEntity`, Kafka event contracts
   - `api-gateway/`, `auth-service/`, `user-service/`, `music-service/`, `playlist-service/`
-  - `docker-compose.yml`, `.env.example`, `docker/mysql/init/`
+  - `docker-compose.yml`, `.env.example`
 - `Frontend/` — React frontend
 - `SiMu/` — the very first Maven sketch of the project, kept for history
 
@@ -166,25 +167,55 @@ docker compose up --build
 | music-service Swagger | http://localhost:8084/swagger-ui.html |
 | playlist-service Swagger | http://localhost:8085/swagger-ui.html |
 | MinIO console | http://localhost:9001 (user/password from `.env`) |
-| auth database | `localhost:5434`, db `simu_auth` |
+| auth database | `localhost:5434`, db `simu_auth` (user `simu`) |
 | user database | `localhost:5435`, db `simu_user` |
+| music database | `localhost:5436`, db `simu_music` |
+| playlist database | `localhost:5437`, db `simu_playlist` |
+| Redis | `localhost:6379` |
 | Kafka (from the host) | `localhost:9094` |
+| MailHog UI | http://localhost:8025 |
+| Web client (Thymeleaf) | http://localhost:8090 |
 
 Run a service outside Docker: `./gradlew :auth-service:bootRun` (needs the infrastructure containers
 and the env variables below).
 
 ## Database migrations
 
-Flyway owns the schema of every service (`src/main/resources/db/migration`), Hibernate runs in
-`validate` mode. A new field means a new migration file, not a silent `ddl-auto=update`.
+Liquibase owns the schema of every service (`src/main/resources/db/changelog`); Hibernate runs in
+`validate` mode, so the startup fails when an entity and the database drift apart. A new field means a
+new changeset, not a silent `ddl-auto=update`.
+
+```
+db/changelog/
+├── db.changelog-master.xml      # <include relativeToChangelogFile="true" .../>
+└── changesets/
+    ├── 001-init.xml
+    └── 002-....xml
+```
+
+To inspect what has been applied:
+
+```bash
+docker compose exec auth-db psql -U simu -d simu_auth \
+  -c "select id, filename, dateexecuted from databasechangelog order by orderexecuted"
+# full schema reset in development
+docker compose down -v && docker compose up -d --build
+```
+
+## Architecture deep-dive
+
+[docs/architecture.md](docs/architecture.md) - services, databases and tables, keys and indexes,
+Kafka events, Redis keys, security, request flows and failure modes.
+
+![Architecture](docs/architecture-overview.png)
+![Data model](docs/architecture-data.png)
 
 ## Environment variables
 
 | Variable | Used by | Description |
 | --- | --- | --- |
 | `GATEWAY_PORT`, `AUTH_SERVICE_PORT`, `USER_SERVICE_PORT`, `MUSIC_SERVICE_PORT`, `PLAYLIST_SERVICE_PORT` | compose | published ports |
-| `MYSQL_PORT`, `MYSQL_ROOT_PASSWORD` | compose | MySQL for music + playlist |
-| `MUSIC_DB_NAME`, `PLAYLIST_DB_NAME` | music/playlist service | MySQL schema names |
+| `MUSIC_DB_*`, `PLAYLIST_DB_*` | music/playlist service | PostgreSQL connection for those services |
 | `AUTH_DB_*` | auth-service | PostgreSQL connection (host, port, name, user, password) |
 | `USER_DB_*` | user-service | PostgreSQL connection |
 | `REDIS_HOST`, `REDIS_PORT` | auth/user service | cache |

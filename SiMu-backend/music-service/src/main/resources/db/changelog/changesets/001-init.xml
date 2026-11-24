@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Track metadata; the audio file itself lives in S3/MinIO, referenced by url. -->
+    <changeSet id="001-01-music" author="simu">
+        <createTable tableName="music">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="artist" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="url" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="now()"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="timestamptz"/>
+        </createTable>
+        <createIndex tableName="music" indexName="ix_music_artist">
+            <column name="artist"/>
+        </createIndex>
+        <createIndex tableName="music" indexName="ix_music_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
