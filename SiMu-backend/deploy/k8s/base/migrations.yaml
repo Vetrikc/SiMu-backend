@@ -1,0 +1,120 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-auth-service
+  namespace: simu
+  labels: { app: auth-service, part-of: simu, role: migration }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels: { app: migrate-auth-service, part-of: simu }
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/vetrikc/simu-auth-service:latest
+          args:
+            - --spring.main.web-application-type=none
+            - --app.migrate-only=true
+            - --server.port=0
+          envFrom:
+            - configMapRef: { name: simu-config }
+            - secretRef: { name: simu-secrets }
+          env:
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m" }
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 768Mi }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-user-service
+  namespace: simu
+  labels: { app: user-service, part-of: simu, role: migration }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels: { app: migrate-user-service, part-of: simu }
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/vetrikc/simu-user-service:latest
+          args:
+            - --spring.main.web-application-type=none
+            - --app.migrate-only=true
+            - --server.port=0
+          envFrom:
+            - configMapRef: { name: simu-config }
+            - secretRef: { name: simu-secrets }
+          env:
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m" }
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 768Mi }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-music-service
+  namespace: simu
+  labels: { app: music-service, part-of: simu, role: migration }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels: { app: migrate-music-service, part-of: simu }
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/vetrikc/simu-music-service:latest
+          args:
+            - --spring.main.web-application-type=none
+            - --app.migrate-only=true
+            - --server.port=0
+          envFrom:
+            - configMapRef: { name: simu-config }
+            - secretRef: { name: simu-secrets }
+          env:
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m" }
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 768Mi }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-playlist-service
+  namespace: simu
+  labels: { app: playlist-service, part-of: simu, role: migration }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels: { app: migrate-playlist-service, part-of: simu }
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/vetrikc/simu-playlist-service:latest
+          args:
+            - --spring.main.web-application-type=none
+            - --app.migrate-only=true
+            - --server.port=0
+          envFrom:
+            - configMapRef: { name: simu-config }
+            - secretRef: { name: simu-secrets }
+          env:
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m" }
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 768Mi }

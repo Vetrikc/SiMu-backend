@@ -1,0 +1,90 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: simu
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: api-gateway
+          resources:
+            requests: { cpu: 150m, memory: 384Mi }
+            limits: { cpu: "1", memory: 900Mi }
+          env:
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "true" }
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m -XX:+UseSerialGC" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: simu
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: auth-service
+          resources:
+            requests: { cpu: 150m, memory: 384Mi }
+            limits: { cpu: "1", memory: 900Mi }
+          env:
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "true" }
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m -XX:+UseSerialGC" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: simu
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: user-service
+          resources:
+            requests: { cpu: 150m, memory: 384Mi }
+            limits: { cpu: "1", memory: 900Mi }
+          env:
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "true" }
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m -XX:+UseSerialGC" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-service
+  namespace: simu
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: music-service
+          resources:
+            requests: { cpu: 150m, memory: 384Mi }
+            limits: { cpu: "1", memory: 900Mi }
+          env:
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "true" }
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m -XX:+UseSerialGC" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playlist-service
+  namespace: simu
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: playlist-service
+          resources:
+            requests: { cpu: 150m, memory: 384Mi }
+            limits: { cpu: "1", memory: 900Mi }
+          env:
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "true" }
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=60 -Xmx512m -XX:+UseSerialGC" }

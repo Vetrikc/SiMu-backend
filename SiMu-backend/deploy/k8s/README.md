@@ -1,67 +1,56 @@
 # Развёртывание SiMu в Kubernetes
 
-Манифесты для пяти приложений (gateway + 4 сервиса). Stateful-компоненты (PostgreSQL, Kafka, Redis,
-MinIO) намеренно **не** описаны: в кластере их ставят операторами или берут managed-сервисы.
-
-## Быстрый старт на k3s
+## Вариант 1: локально на kind (проверка манифестов)
 
 ```bash
-# 1. кластер (Ubuntu, 4+ ядра, 8 ГБ)
-curl -sfL https://get.k3s.io | sh -
+bash scripts/k8s/up.sh
+kubectl -n simu get pods
+curl http://localhost:8081/actuator/health
+```
+
+Скрипт создаёт кластер `simu`, ставит ingress-nginx, собирает образы, загружает их в kind,
+генерирует секрет из `.env` и применяет overlay `overlays/kind`: приложение и зависимости
+(PostgreSQL, Redis, Kafka, MinIO, MailHog) в одном namespace, данные в `emptyDir`.
+
+Требования: 6+ ядер, 10+ ГБ свободной памяти, kind и kubectl.
+
+## Вариант 2: кластер (k3s / managed)
+
+```bash
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
-# 2. ingress-nginx и cert-manager
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
-
-# 3. секреты
-cp deploy/k8s/base/secret.example.yaml deploy/k8s/base/secret.yaml
-# отредактировать пароли/ключи, затем:
+kubectl apply -f deploy/k8s/base/namespace.yaml
+bash scripts/k8s/secret.sh              # генерирует base/secret.yaml из .env (не коммитится)
+kubectl apply -f deploy/k8s/base/secret.yaml
+kubectl apply -f deploy/k8s/base/migrations.yaml
+kubectl wait --for=condition=complete job -l role=migration -n simu --timeout=300s
 kubectl apply -k deploy/k8s/base
 ```
 
-## Stateful-зависимости
-
-| Компонент | Рекомендация |
-|---|---|
-| PostgreSQL | CloudNativePG или managed (RDS/Cloud SQL) |
-| Kafka | Strimzi (KRaft, 3 брокера) или managed |
-| Redis | Bitnami chart / managed |
-| MinIO | MinIO Operator или внешний S3 |
-
-Для локальной проверки манифестов без операторов можно поднять зависимости через
-`docker compose up -d postgres/redis/kafka/minio` на хосте и указать их адреса в ConfigMap
-(`AUTH_DB_HOST` и т.д.), если кластер видит хост.
-
-## Пробы
-
-Приложение отдаёт три группы Actuator:
-
-- `/actuator/health/liveness` — процесс жив (не зависит от БД);
-- `/actuator/health/readiness` — можно принимать трафик (проверяет БД, Redis);
-- `/actuator/health` — полный статус для диагностики.
+Stateful-компоненты (PostgreSQL, Kafka, Redis, MinIO) в base намеренно не описаны:
+в кластере их ставят операторами (CloudNativePG, Strimzi, Bitnami) или берут managed.
+В `configmap.yaml` подставьте реальные адреса.
 
 ## Миграции
 
-Liquibase запускается при старте приложения. Для продакшена это ограничение: при `RollingUpdate`
-две реплики могут мигрировать одновременно. Варианты:
+Deployment'ы стартуют с `SPRING_LIQUIBASE_ENABLED=false`. Схему применяют Job'ы из
+`migrations.yaml` — тот же образ с `--app.migrate-only=true` (хук в модуле `common`):
+контекст поднимается, Liquibase отрабатывает, процесс выходит с кодом 0.
+Порядок выката: Job → complete → rolling update.
 
-1. вынести миграции в Job из того же образа (`--spring.main.web-application-type=none` + выход после
-   `Liquibase`), а в Deployment выставить `spring.liquibase.enabled=false`;
-2. использовать `Recreate` для сервиса с миграциями (простой на время релиза);
-3. запускать миграции отдельным шагом CI до `kubectl set image`.
+## Пробы
 
-Сейчас выбран компромисс: миграции идемпотентны, а `maxUnavailable: 0` не даёт уронить сервис,
-но гонку двух подов на старте это не исключает полностью — пункт 3 рекомендуется как целевой.
+- `/actuator/health/liveness` — процесс жив;
+- `/actuator/health/readiness` — БД и Redis доступны;
+- `/actuator/health` — полный статус.
 
-## Ресурсы
+## Образы
 
-Запросы/лимиты рассчитаны на 2 реплики каждого сервиса. На 6-ядерной машине полноценный кластер
-с stateful-стеком не помещается — нужны внешние БД/брокер или отдельный узел.
+CI пушит `ghcr.io/<owner>/simu-<module>:<sha>`. В манифестах стоит `:latest`;
+в пайплайне тег подставляется через `kustomize edit set image` (шаг `manifests`).
 
 ## Что дальше
 
-- Grafana Agent / kube-prometheus-stack для сбора `/actuator/prometheus`;
-- Tempo/Jaeger для трассировки (`TRACING_ENABLED=true`, `OTLP_ENDPOINT`);
+- `kube-prometheus-stack`: аннотации `prometheus.io/scrape` уже стоят на Deployment;
+- Tempo/Jaeger для трейсинга (`TRACING_ENABLED=true`, `OTLP_ENDPOINT`);
 - sealed-secrets или Vault вместо `secret.yaml`;
-- ArgoCD/Flux для GitOps-деплоя.
+- ArgoCD/Flux для GitOps.

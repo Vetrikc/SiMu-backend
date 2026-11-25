@@ -37,6 +37,8 @@ spec:
           env:
             - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=75 -XX:+UseZGC -XX:+ZGenerational" }
             - { name: SERVER_PORT, value: "8081" }
+
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "false" }
           resources:
             requests: { cpu: 500m, memory: 512Mi }
             limits: { cpu: "2", memory: 1Gi }
@@ -97,6 +99,8 @@ spec:
           env:
             - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=75 -XX:+UseZGC -XX:+ZGenerational" }
             - { name: SERVER_PORT, value: "8082" }
+
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "false" }
           resources:
             requests: { cpu: 500m, memory: 512Mi }
             limits: { cpu: "2", memory: 1Gi }
@@ -157,6 +161,8 @@ spec:
           env:
             - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=75 -XX:+UseZGC -XX:+ZGenerational" }
             - { name: SERVER_PORT, value: "8083" }
+
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "false" }
           resources:
             requests: { cpu: 250m, memory: 512Mi }
             limits: { cpu: "1", memory: 768Mi }
@@ -217,6 +223,8 @@ spec:
           env:
             - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=75 -XX:+UseZGC -XX:+ZGenerational" }
             - { name: SERVER_PORT, value: "8084" }
+
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "false" }
           resources:
             requests: { cpu: 500m, memory: 768Mi }
             limits: { cpu: "2", memory: 1Gi }
@@ -277,6 +285,8 @@ spec:
           env:
             - { name: JAVA_TOOL_OPTIONS, value: "-XX:MaxRAMPercentage=75 -XX:+UseZGC -XX:+ZGenerational" }
             - { name: SERVER_PORT, value: "8085" }
+
+            - { name: SPRING_LIQUIBASE_ENABLED, value: "false" }
           resources:
             requests: { cpu: 250m, memory: 512Mi }
             limits: { cpu: "1", memory: 768Mi }

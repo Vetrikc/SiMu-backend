@@ -21,3 +21,10 @@ subprojects {
         }
     }
 }
+subprojects {
+    tasks.withType(Test).configureEach {
+        if (name == 'test') {
+            useJUnitPlatform { excludeTags 'integration' }
+        }
+    }
+}

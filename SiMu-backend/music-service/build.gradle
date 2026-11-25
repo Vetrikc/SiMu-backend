@@ -54,9 +54,18 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests against real dependencies (Testcontainers).'
+    group = 'verification'
+    useJUnitPlatform { includeTags 'integration' }
+    shouldRunAfter test
 }

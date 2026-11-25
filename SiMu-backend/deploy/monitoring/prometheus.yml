@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Docker DNS resolves every replica of a service name to its container IPs.
+  - job_name: api-gateway
+    dns_sd_configs:
+      - names: ['api-gateway', 'api-gateway-2', 'api-gateway-3']
+        type: A
+        port: 8081
+    metrics_path: /actuator/prometheus
+
+  - job_name: auth-service
+    dns_sd_configs:
+      - names: ['auth-service']
+        type: A
+        port: 8082
+    metrics_path: /actuator/prometheus
+
+  - job_name: user-service
+    dns_sd_configs:
+      - names: ['user-service']
+        type: A
+        port: 8083
+    metrics_path: /actuator/prometheus
+
+  - job_name: music-service
+    dns_sd_configs:
+      - names: ['music-service', 'music-service-2']
+        type: A
+        port: 8084
+    metrics_path: /actuator/prometheus
+
+  - job_name: playlist-service
+    dns_sd_configs:
+      - names: ['playlist-service']
+        type: A
+        port: 8085
+    metrics_path: /actuator/prometheus

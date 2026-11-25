@@ -186,6 +186,8 @@ services:
       dockerfile: api-gateway/Dockerfile
       args:
         MODULE_NAME: api-gateway
+    env_file:
+      - ./deploy/monitoring/tracing.env
     environment:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
@@ -219,6 +221,8 @@ services:
       dockerfile: api-gateway/Dockerfile
       args:
         MODULE_NAME: api-gateway
+    env_file:
+      - ./deploy/monitoring/tracing.env
     environment:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
@@ -258,6 +262,8 @@ services:
       dockerfile: api-gateway/Dockerfile
       args:
         MODULE_NAME: api-gateway
+    env_file:
+      - ./deploy/monitoring/tracing.env
     environment:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
@@ -297,6 +303,8 @@ services:
       dockerfile: music-service/Dockerfile
       args:
         MODULE_NAME: music-service
+    env_file:
+      - ./deploy/monitoring/tracing.env
     environment:
       MUSIC_DB_HOST: music-db
       MUSIC_DB_PORT: 5432
@@ -349,6 +357,8 @@ services:
       dockerfile: auth-service/Dockerfile
       args:
         MODULE_NAME: auth-service
+    env_file:
+      - ./deploy/monitoring/tracing.env
     container_name: simu-auth-service
     ports:
       - "${AUTH_SERVICE_PORT:-8082}:8082"
@@ -401,6 +411,8 @@ services:
       dockerfile: user-service/Dockerfile
       args:
         MODULE_NAME: user-service
+    env_file:
+      - ./deploy/monitoring/tracing.env
     container_name: simu-user-service
     ports:
       - "${USER_SERVICE_PORT:-8083}:8083"
@@ -437,6 +449,8 @@ services:
       dockerfile: music-service/Dockerfile
       args:
         MODULE_NAME: music-service
+    env_file:
+      - ./deploy/monitoring/tracing.env
     environment:
       MUSIC_DB_HOST: music-db
       MUSIC_DB_PORT: 5432
@@ -473,6 +487,8 @@ services:
       dockerfile: playlist-service/Dockerfile
       args:
         MODULE_NAME: playlist-service
+    env_file:
+      - ./deploy/monitoring/tracing.env
     container_name: simu-playlist-service
     ports:
       - "${PLAYLIST_SERVICE_PORT:-8085}:8085"
@@ -501,7 +517,48 @@ services:
       start_period: 40s
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: simu-prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: simu-grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./deploy/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: simu-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
+      - "${OTLP_HTTP_PORT:-4318}:4318"
+    restart: unless-stopped
+
 volumes:
+  prometheus-data:
+  grafana-data:
   music-db-data:
   playlist-db-data:
   auth-db-data:

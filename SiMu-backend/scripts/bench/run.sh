@@ -19,6 +19,7 @@ USERS=20
 DURATION=60
 CONCURRENCY="16 32 64"
 LIGHT=0
+REBUILD=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -30,6 +31,7 @@ while [ $# -gt 0 ]; do
     --duration) DURATION="$2"; shift 2;;
     --concurrency) CONCURRENCY="$2"; shift 2;;
     --light) LIGHT=1; shift;;
+    --rebuild) REBUILD=1; shift;;
     -h|--help) sed -n '2,12p' "$0"; exit 0;;
     *) die "unknown option: $1";;
   esac
@@ -91,8 +93,15 @@ write_env() {
 write_env
 
 # ---------- start stack ----------
-log "building and starting the stack (this takes a few minutes)"
-docker compose up -d --build 2>&1 | tail -5
+if [ "$REBUILD" = "1" ]; then
+  log "clean rebuild: down + build --no-cache"
+  docker compose down >/dev/null 2>&1 || true
+  docker compose build --no-cache 2>&1 | tail -5
+  docker compose up -d 2>&1 | tail -5
+else
+  log "building and starting the stack (this takes a few minutes)"
+  docker compose up -d --build 2>&1 | tail -5
+fi
 if [ "$LIGHT" = "1" ]; then
   log "light mode: stopping extra replicas"
   docker compose stop api-gateway-2 api-gateway-3 music-service-2 >/dev/null 2>&1 || true

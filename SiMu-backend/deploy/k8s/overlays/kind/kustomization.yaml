@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: simu
+
+resources:
+  - ../../base
+  - stateful-dev.yaml
+
+images:
+  - { name: ghcr.io/vetrikc/simu-api-gateway,   newName: simu-api-gateway,   newTag: kind }
+  - { name: ghcr.io/vetrikc/simu-auth-service,  newName: simu-auth-service,  newTag: kind }
+  - { name: ghcr.io/vetrikc/simu-user-service,  newName: simu-user-service,  newTag: kind }
+  - { name: ghcr.io/vetrikc/simu-music-service, newName: simu-music-service, newTag: kind }
+  - { name: ghcr.io/vetrikc/simu-playlist-service, newName: simu-playlist-service, newTag: kind }
+
+patches:
+  - path: patch-kind-apps.yaml
+    target: { kind: Deployment }
+  - path: patch-kind-ingress.yaml
+    target: { kind: Ingress, name: simu }

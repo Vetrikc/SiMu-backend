@@ -9,4 +9,10 @@
 **/minio-data/
 .env
 **/.env
-*.log
+*.log# benchmark artefacts
+bench-results/
+*.tar.gz
+# build output
+target/
+# local secrets
+deploy/k8s/base/secret.yaml

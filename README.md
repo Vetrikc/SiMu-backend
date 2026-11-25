@@ -237,3 +237,10 @@ Kafka events, Redis keys, security, request flows and failure modes.
 ## Project status
 
 The monolith lives on `main`; the microservice split is developed on `feature/microservices`.
+## Мониторинг и Kubernetes
+
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (admin / admin)
+- Jaeger: http://localhost:16686
+- Локальный Kubernetes (kind): `bash scripts/k8s/up.sh`
+- Подробности: [docs/devops.md](SiMu-backend/docs/devops.md)
