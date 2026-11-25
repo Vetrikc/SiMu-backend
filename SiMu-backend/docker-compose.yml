@@ -186,9 +186,6 @@ services:
       dockerfile: api-gateway/Dockerfile
       args:
         MODULE_NAME: api-gateway
-    container_name: simu-api-gateway
-    ports:
-      - "${GATEWAY_PORT:-8081}:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
@@ -213,6 +210,136 @@ services:
       music-service:
         condition: service_healthy
       playlist-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api-gateway-2:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      args:
+        MODULE_NAME: api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RATE_LIMIT_SIGNIN_PER_MINUTE: ${RATE_LIMIT_SIGNIN_PER_MINUTE:-5}
+      RATE_LIMIT_SIGNUP_PER_MINUTE: ${RATE_LIMIT_SIGNUP_PER_MINUTE:-5}
+      RATE_LIMIT_RECOVERY_PER_MINUTE: ${RATE_LIMIT_RECOVERY_PER_MINUTE:-3}
+      RATE_LIMIT_REFRESH_PER_MINUTE: ${RATE_LIMIT_REFRESH_PER_MINUTE:-30}
+      AUTH_SERVICE_URL: http://auth-service:8082
+      USER_SERVICE_URL: http://user-service:8083
+      MUSIC_SERVICE_URL: http://music-service:8084
+      PLAYLIST_SERVICE_URL: http://playlist-service:8085
+    depends_on:
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      music-service:
+        condition: service_healthy
+      playlist-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+    restart: unless-stopped
+
+  api-gateway-3:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      args:
+        MODULE_NAME: api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RATE_LIMIT_SIGNIN_PER_MINUTE: ${RATE_LIMIT_SIGNIN_PER_MINUTE:-5}
+      RATE_LIMIT_SIGNUP_PER_MINUTE: ${RATE_LIMIT_SIGNUP_PER_MINUTE:-5}
+      RATE_LIMIT_RECOVERY_PER_MINUTE: ${RATE_LIMIT_RECOVERY_PER_MINUTE:-3}
+      RATE_LIMIT_REFRESH_PER_MINUTE: ${RATE_LIMIT_REFRESH_PER_MINUTE:-30}
+      AUTH_SERVICE_URL: http://auth-service:8082
+      USER_SERVICE_URL: http://user-service:8083
+      MUSIC_SERVICE_URL: http://music-service:8084
+      PLAYLIST_SERVICE_URL: http://playlist-service:8085
+    depends_on:
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      music-service:
+        condition: service_healthy
+      playlist-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+    restart: unless-stopped
+
+  music-service-2:
+    build:
+      context: .
+      dockerfile: music-service/Dockerfile
+      args:
+        MODULE_NAME: music-service
+    environment:
+      MUSIC_DB_HOST: music-db
+      MUSIC_DB_PORT: 5432
+      MUSIC_DB_NAME: ${MUSIC_DB_NAME}
+      MUSIC_DB_USER: ${MUSIC_DB_USER}
+      MUSIC_DB_PASSWORD: ${MUSIC_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
+      S3_PATH_STYLE: "true"
+      S3_REGION: ${S3_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+    depends_on:
+      music-db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+    restart: unless-stopped
+
+  edge:
+    image: nginx:1.27-alpine
+    container_name: simu-edge
+    ports:
+      - "${GATEWAY_PORT:-8081}:8081"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      music-service:
         condition: service_healthy
     restart: unless-stopped
 
@@ -310,9 +437,6 @@ services:
       dockerfile: music-service/Dockerfile
       args:
         MODULE_NAME: music-service
-    container_name: simu-music-service
-    ports:
-      - "${MUSIC_SERVICE_PORT:-8084}:8084"
     environment:
       MUSIC_DB_HOST: music-db
       MUSIC_DB_PORT: 5432
