@@ -5,7 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
+
+import java.net.http.HttpClient;
+import java.time.Duration;
 
 /**
  * Calls {@code playlist-service} to provision the default "Favorites" playlist of a new user.
@@ -23,7 +27,7 @@ public class PlaylistClient {
 
     public PlaylistClient(@Value("${services.playlist-service.url}") String baseUrl,
                           @Value("${services.internal-api-key:}") String internalApiKey) {
-        this.restClient = RestClient.builder()
+        this.restClient = RestClient.builder().requestFactory(requestFactory())
                 .baseUrl(baseUrl)
                 .defaultHeader(InternalApiKeyFilter.HEADER, internalApiKey)
                 .build();
@@ -38,5 +42,17 @@ public class PlaylistClient {
         } catch (RuntimeException e) {
             log.warn("Could not create the default playlist for user id={}: {}", userId, e.getMessage());
         }
+    }
+
+    /**
+     * Internal calls must fail fast: a hanging neighbour would otherwise pin request threads.
+     */
+    private static JdkClientHttpRequestFactory requestFactory() {
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(300))
+                .build();
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
+        factory.setReadTimeout(Duration.ofSeconds(1));
+        return factory;
     }
 }

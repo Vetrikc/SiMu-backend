@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.simu.music.dto.ErrorResponse;
 import org.example.simu.music.dto.MusicDTO;
+import org.example.simu.music.dto.PageResponse;
 import org.example.simu.music.dto.MusicUploadDTO;
 import org.example.simu.music.exception.FileProcessingException;
 import org.example.simu.music.exception.MusicNotFoundException;
@@ -24,8 +25,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -61,16 +64,36 @@ public class MusicController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<MusicDTO> getMusic(@PathVariable Long id) {
-        log.info("Fetching music with ID: {}", id);
+        log.debug("Fetching music with ID: {}", id);
         return ResponseEntity.ok(musicService.getMusic(id));
     }
 
-    @Operation(summary = "Get all music records", description = "Returns a list of all music records")
+    @Operation(summary = "Get a page of music records",
+            description = "Keyset pagination: pass nextCursor from the previous response, limit is 1..200")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<MusicDTO>> getAllMusic() {
-        log.info("Fetching all music records");
-        return ResponseEntity.ok(musicService.getAllMusic());
+    public ResponseEntity<PageResponse<MusicDTO>> getAllMusic(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "50") int limit) {
+        return ResponseEntity.ok(musicService.getPage(cursor, clampLimit(limit)));
+    }
+
+    @Operation(summary = "Search music by name or artist")
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PageResponse<MusicDTO>> search(
+            @RequestParam String q,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "50") int limit) {
+        String query = q == null ? "" : q.trim();
+        if (query.length() < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search query must contain at least 2 characters");
+        }
+        return ResponseEntity.ok(musicService.search(query, cursor, clampLimit(limit)));
+    }
+
+    private static int clampLimit(int limit) {
+        return Math.min(Math.max(limit, 1), 200);
     }
 
     @Operation(summary = "Upload music file", description = "Uploads a music file to S3 and saves its metadata")
@@ -79,7 +102,7 @@ public class MusicController {
     public ResponseEntity<MusicDTO> uploadMusic(@RequestPart("file") MultipartFile file,
                                                 @RequestPart("music") @Valid MusicUploadDTO musicUploadDTO,
                                                 UriComponentsBuilder uriBuilder) {
-        log.info("Received file upload request: filename={}", file.getOriginalFilename());
+        log.debug("Received file upload request: filename={}", file.getOriginalFilename());
 
         if (file.isEmpty()) {
             throw new FileProcessingException("Uploaded file is empty");
@@ -104,7 +127,7 @@ public class MusicController {
                     new MusicDTO(null, musicUploadDTO.name(), musicUploadDTO.artist(), fileUrl));
 
             URI location = uriBuilder.path("/api/v1/music/{id}").buildAndExpand(saved.id()).toUri();
-            log.info("Music uploaded and saved: id={}, url={}", saved.id(), fileUrl);
+            log.debug("Music uploaded and saved: id={}, url={}", saved.id(), fileUrl);
             return ResponseEntity.created(location).body(saved);
         } catch (IOException e) {
             log.error("Failed to upload file: {}", originalFilename, e);

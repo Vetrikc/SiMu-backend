@@ -60,7 +60,7 @@ public class MyPlaylistsController {
     public ResponseEntity<List<PlaylistResponse>> getMyPlaylists(Authentication authentication,
                                                                HttpServletRequest request) {
         Long userId = currentUserResolver.resolveUserId(request);
-        log.info("Listing playlists of user id={}", userId);
+        log.debug("Listing playlists of user id={}", userId);
         return ResponseEntity.ok(playlistService.getPlaylistsForUser(userId));
     }
 
@@ -72,7 +72,7 @@ public class MyPlaylistsController {
                                                              HttpServletRequest request,
                                                              UriComponentsBuilder uriBuilder) {
         Long userId = currentUserResolver.resolveUserId(request);
-        log.info("Creating playlist for user id={}", userId);
+        log.debug("Creating playlist for user id={}", userId);
 
         PlaylistResponse response = playlistService.createPlaylistForUser(userId, body.name(), body.description());
         URI location = uriBuilder.path("/api/v1/playlists/{id}").buildAndExpand(response.id()).toUri();

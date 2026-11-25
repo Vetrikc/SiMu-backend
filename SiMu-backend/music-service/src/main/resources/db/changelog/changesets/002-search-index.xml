@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Trigram indexes back the ILIKE search on name/artist without a full table scan -->
+    <changeSet id="002-01-search-indexes" author="simu">
+        <sql>CREATE EXTENSION IF NOT EXISTS pg_trgm</sql>
+        <sql>CREATE INDEX IF NOT EXISTS ix_music_name_trgm ON music USING gin (name gin_trgm_ops)</sql>
+        <sql>CREATE INDEX IF NOT EXISTS ix_music_artist_trgm ON music USING gin (artist gin_trgm_ops)</sql>
+    </changeSet>
+
+</databaseChangeLog>

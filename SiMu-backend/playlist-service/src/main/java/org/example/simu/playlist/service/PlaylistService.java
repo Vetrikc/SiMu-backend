@@ -1,6 +1,7 @@
 package org.example.simu.playlist.service;
 
 import org.example.simu.playlist.client.MusicServiceClient;
+import org.example.simu.playlist.config.CacheConfig;
 import org.example.simu.playlist.dto.MusicDTO;
 import org.example.simu.playlist.dto.PlaylistResponse;
 import org.example.simu.playlist.entity.PlayList;
@@ -10,6 +11,8 @@ import org.example.simu.playlist.mapper.PlaylistMapper;
 import org.example.simu.playlist.repository.PlayListRepository;
 import org.example.simu.playlist.repository.UserPlaylistRepository;
 import org.slf4j.Logger;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +54,7 @@ public class PlaylistService {
         return playListRepository.findById(id).map(playlistMapper::toResponse);
     }
 
+    @CacheEvict(cacheNames = CacheConfig.PLAYLIST_LIBRARY, allEntries = true)
     @Transactional
     public PlaylistResponse addTrackToPlaylist(Long playlistId, Long musicId, Long userId) {
         requireOwned(playlistId, userId);
@@ -83,6 +87,7 @@ public class PlaylistService {
     /**
      * Soft-deletes the playlist and every library link that points at it.
      */
+    @CacheEvict(cacheNames = CacheConfig.PLAYLIST_LIBRARY, allEntries = true)
     @Transactional
     public void deletePlaylist(Long playlistId, Long userId) {
         requireOwned(playlistId, userId);
@@ -104,6 +109,7 @@ public class PlaylistService {
      * Reacts to a {@code UserDeleted} Kafka event: the user's playlists and library links are
      * soft-deleted in one local transaction.
      */
+    @CacheEvict(cacheNames = CacheConfig.PLAYLIST_LIBRARY, allEntries = true)
     @Transactional
     public void softDeleteUserLibrary(Long userId) {
         List<UserPlaylist> links = userPlaylistRepository.findByUserIdOrderByIdAsc(userId);
@@ -123,6 +129,7 @@ public class PlaylistService {
         log.info("Library of user id={} soft-deleted ({} playlists)", userId, links.size());
     }
 
+    @Cacheable(cacheNames = CacheConfig.PLAYLIST_LIBRARY, key = "#userId")
     @Transactional(readOnly = true)
     public List<PlaylistResponse> getPlaylistsForUser(Long userId) {
         List<Long> playlistIds = userPlaylistRepository.findByUserIdOrderByIdAsc(userId).stream()
@@ -143,6 +150,7 @@ public class PlaylistService {
                 .toList();
     }
 
+    @CacheEvict(cacheNames = CacheConfig.PLAYLIST_LIBRARY, allEntries = true)
     @Transactional
     public PlaylistResponse createPlaylistForUser(Long userId, String name, String description) {
         PlayList playList = new PlayList();
@@ -157,6 +165,7 @@ public class PlaylistService {
     /**
      * Replaces the {@code "Favorites"} playlist the monolith created during signup.
      */
+    @CacheEvict(cacheNames = CacheConfig.PLAYLIST_LIBRARY, allEntries = true)
     @Transactional
     public PlaylistResponse createDefaultPlaylistForUser(Long userId) {
         PlayList playList = new PlayList();

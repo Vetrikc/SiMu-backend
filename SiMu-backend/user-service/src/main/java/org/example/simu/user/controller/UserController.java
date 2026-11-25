@@ -53,7 +53,7 @@ public class UserController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserInfoResponse> getUserInfo(Authentication authentication) {
-        log.info("Fetching user info for: {}", authentication.getName());
+        log.debug("Fetching user info for: {}", authentication.getName());
         return ResponseEntity.ok(userProfileService.getProfile(authentication.getName()));
     }
 
@@ -62,7 +62,7 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteAccount(Authentication authentication, HttpServletRequest httpRequest) {
         Long userId = currentUserResolver.resolveUserId(authentication, httpRequest);
-        log.info("Deleting account id={}", userId);
+        log.debug("Deleting account id={}", userId);
 
         authServiceClient.deleteUser(userId);
         userProfileService.deleteProfileByUserId(userId);

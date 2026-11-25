@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: simu-config
+  namespace: simu
+data:
+  AUTH_DB_HOST: auth-db
+  AUTH_DB_PORT: "5432"
+  AUTH_DB_NAME: simu_auth
+  USER_DB_HOST: user-db
+  USER_DB_PORT: "5432"
+  USER_DB_NAME: simu_user
+  MUSIC_DB_HOST: music-db
+  MUSIC_DB_PORT: "5432"
+  MUSIC_DB_NAME: simu_music
+  PLAYLIST_DB_HOST: playlist-db
+  PLAYLIST_DB_PORT: "5432"
+  PLAYLIST_DB_NAME: simu_playlist
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  S3_ENDPOINT: http://minio:9000
+  S3_PUBLIC_URL: http://minio:9000
+  S3_PATH_STYLE: "true"
+  S3_REGION: us-east-1
+  S3_BUCKET: simu-music
+  MAIL_HOST: mailhog
+  MAIL_PORT: "1025"
+  MAIL_FROM: no-reply@simu.local
+  AUTH_SERVICE_URL: http://auth-service:8082
+  USER_SERVICE_URL: http://user-service:8083
+  MUSIC_SERVICE_URL: http://music-service:8084
+  PLAYLIST_SERVICE_URL: http://playlist-service:8085
+  VIRTUAL_THREADS: "true"
+  KAFKA_CONSUMER_CONCURRENCY: "3"
+  TRACING_ENABLED: "false"

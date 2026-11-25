@@ -56,7 +56,7 @@ public class PlaylistController {
                                                                @PathVariable Long musicId,
                                                                HttpServletRequest request) {
         Long userId = currentUserResolver.resolveUserId(request);
-        log.info("Adding track ID: {} to playlist ID: {} of user {}", musicId, playlistId, userId);
+        log.debug("Adding track ID: {} to playlist ID: {} of user {}", musicId, playlistId, userId);
         return ResponseEntity.ok(playlistService.addTrackToPlaylist(playlistId, musicId, userId));
     }
 
@@ -65,7 +65,7 @@ public class PlaylistController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PlaylistResponse> getPlaylist(@PathVariable Long id, HttpServletRequest request) {
         Long userId = currentUserResolver.resolveUserId(request);
-        log.info("Fetching playlist with ID: {} of user {}", id, userId);
+        log.debug("Fetching playlist with ID: {} of user {}", id, userId);
         PlaylistResponse playlist = playlistService.getPlaylist(id, userId)
                 .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found with ID: " + id));
         return ResponseEntity.ok(playlist);
@@ -76,7 +76,7 @@ public class PlaylistController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deletePlaylist(@PathVariable Long id, HttpServletRequest request) {
         Long userId = currentUserResolver.resolveUserId(request);
-        log.info("Deleting playlist ID: {} of user {}", id, userId);
+        log.debug("Deleting playlist ID: {} of user {}", id, userId);
         playlistService.deletePlaylist(id, userId);
         return ResponseEntity.noContent().build();
     }

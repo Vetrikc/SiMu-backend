@@ -1,0 +1,50 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway
+  namespace: simu
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: api-gateway }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service
+  namespace: simu
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: auth-service }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: user-service
+  namespace: simu
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: user-service }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: music-service
+  namespace: simu
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: music-service }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: playlist-service
+  namespace: simu
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: playlist-service }

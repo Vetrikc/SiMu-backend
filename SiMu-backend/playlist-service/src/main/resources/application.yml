@@ -1,15 +1,26 @@
 server:
   port: 8085
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: ${TOMCAT_THREADS:400}
+    accept-count: ${TOMCAT_ACCEPT_COUNT:200}
+    max-connections: ${TOMCAT_MAX_CONNECTIONS:10000}
 
 spring:
   application:
     name: playlist-service
+  threads:
+    virtual:
+      enabled: ${VIRTUAL_THREADS:true}
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   datasource:
     url: jdbc:postgresql://${PLAYLIST_DB_HOST:localhost}:${PLAYLIST_DB_PORT:5432}/${PLAYLIST_DB_NAME:simu_playlist}
     username: ${PLAYLIST_DB_USER:simu}
     password: ${PLAYLIST_DB_PASSWORD:simu}
     hikari:
-      maximum-pool-size: ${PLAYLIST_DB_POOL_SIZE:10}
+      maximum-pool-size: ${PLAYLIST_DB_POOL_SIZE:20}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -21,6 +32,13 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+  cache:
+    type: redis
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
@@ -31,6 +49,7 @@ spring:
       enable-auto-commit: false
     listener:
       ack-mode: record
+      concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
     admin:
       fail-fast: false
 
@@ -55,8 +74,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       probes:
         enabled: true
+      show-details: when-authorized
+  tracing:
+    enabled: ${TRACING_ENABLED:false}
+    sampling:
+      probability: ${TRACING_SAMPLE:0.1}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

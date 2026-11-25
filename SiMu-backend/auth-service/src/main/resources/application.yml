@@ -1,15 +1,26 @@
 server:
   port: 8082
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: ${TOMCAT_THREADS:400}
+    accept-count: ${TOMCAT_ACCEPT_COUNT:200}
+    max-connections: ${TOMCAT_MAX_CONNECTIONS:10000}
 
 spring:
   application:
     name: auth-service
+  threads:
+    virtual:
+      enabled: ${VIRTUAL_THREADS:true}
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   datasource:
     url: jdbc:postgresql://${AUTH_DB_HOST:localhost}:${AUTH_DB_PORT:5432}/${AUTH_DB_NAME:simu_auth}
     username: ${AUTH_DB_USER:simu}
     password: ${AUTH_DB_PASSWORD:simu}
     hikari:
-      maximum-pool-size: ${AUTH_DB_POOL_SIZE:10}
+      maximum-pool-size: ${AUTH_DB_POOL_SIZE:20}
       connection-timeout: 30000
   jpa:
     hibernate:
@@ -90,8 +101,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       probes:
         enabled: true
+      show-details: when-authorized
+  tracing:
+    enabled: ${TRACING_ENABLED:false}
+    sampling:
+      probability: ${TRACING_SAMPLE:0.1}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

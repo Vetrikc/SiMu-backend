@@ -74,7 +74,7 @@ public class SecurityController {
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest signupRequest,
                                                  HttpServletRequest httpRequest) {
-        log.info("Signup request for username: {}", signupRequest.username());
+        log.debug("Signup request for username: {}", signupRequest.username());
 
         if (userService.existsByUsername(signupRequest.username())) {
             throw new UserAlreadyExistsException("Username already exists: " + signupRequest.username());
@@ -93,7 +93,7 @@ public class SecurityController {
         TokenPair pair = tokenService.issue(user, clientIp(httpRequest), httpRequest.getHeader("User-Agent"));
         loginAuditService.record(user.getId(), user.getUsername(), true, "SIGNUP", httpRequest);
 
-        log.info("User registered successfully with ID: {}", user.getId());
+        log.debug("User registered successfully with ID: {}", user.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new SignupResponse("User registered successfully", pair.accessToken(), pair.refreshToken(),
                         pair.expiresIn(), pair.refreshExpiresIn(), user.getId()));
@@ -103,7 +103,7 @@ public class SecurityController {
     @PostMapping(value = "/signin", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SigninResponse> signin(@Valid @RequestBody SigninRequest signinRequest,
                                                  HttpServletRequest httpRequest) {
-        log.info("Signin request for username: {}", signinRequest.username());
+        log.debug("Signin request for username: {}", signinRequest.username());
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(signinRequest.username(), signinRequest.password()));
@@ -112,7 +112,7 @@ public class SecurityController {
             TokenPair pair = tokenService.issue(user, clientIp(httpRequest), httpRequest.getHeader("User-Agent"));
             loginAuditService.record(user.getId(), user.getUsername(), true, null, httpRequest);
 
-            log.info("User signed in successfully: {}", signinRequest.username());
+            log.debug("User signed in successfully: {}", signinRequest.username());
             return ResponseEntity.ok(new SigninResponse(pair.accessToken(), pair.refreshToken(),
                     pair.expiresIn(), pair.refreshExpiresIn()));
         } catch (BadCredentialsException e) {
